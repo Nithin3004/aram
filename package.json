@@ -1,0 +1,15 @@
+{
+  "name": "aram-stock-sales",
+  "private": true,
+  "packageManager": "pnpm@9.15.9",
+  "scripts": {
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "build:shared": "pnpm --filter @aram/shared build",
+    "dev:api": "pnpm --filter @aram/api dev",
+    "dev:web": "pnpm --filter @aram/web dev",
+    "dev:mobile": "pnpm --filter @aram/mobile web",
+    "test": "pnpm -r test",
+    "seed": "pnpm --filter @aram/api seed"
+  }
+}

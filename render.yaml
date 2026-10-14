@@ -1,0 +1,41 @@
+# Render blueprint for the API (free plan).
+# Secrets marked `sync: false` are entered by you in the Render dashboard — never committed.
+services:
+  - type: web
+    name: aram-api
+    runtime: node
+    plan: free
+    region: singapore
+    rootDir: .
+    buildCommand: >-
+      npm install -g pnpm@9.15.9 &&
+      pnpm install --frozen-lockfile &&
+      pnpm --filter @aram/shared build &&
+      cd apps/api &&
+      npx prisma generate &&
+      npx prisma migrate deploy &&
+      npx ts-node --transpile-only prisma/seed.ts --if-empty &&
+      npx nest build
+    startCommand: cd apps/api && node dist/main.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: SMS_PROVIDER
+        value: console
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_REGION
+        sync: false
+      - key: S3_ACCESS_KEY
+        sync: false
+      - key: S3_SECRET_KEY
+        sync: false
+      - key: S3_BUCKET
+        value: aram-photos

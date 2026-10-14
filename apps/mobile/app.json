@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "ARAM Shop",
+    "slug": "aram-shop",
+    "scheme": "aram",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "android": {
+      "package": "com.aram.shop",
+      "adaptiveIcon": {
+        "backgroundColor": "#173a2a",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-status-bar",
+      "expo-font",
+      "expo-splash-screen",
+      "expo-sqlite",
+      [
+        "expo-camera",
+        { "cameraPermission": "The camera is used to scan delivery QR codes and photograph received goods." }
+      ],
+      [
+        "expo-image-picker",
+        { "cameraPermission": "The camera is used to photograph received goods." }
+      ]
+    ]
+  }
+}

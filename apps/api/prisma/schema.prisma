@@ -1,0 +1,363 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Quantities: integer grams. Money: integer paise. Timestamps: UTC.
+// Business dates ("YYYY-MM-DD") are IST calendar days.
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  SHOP
+}
+
+enum ShopType {
+  HO
+  SUPERVISOR
+  SMALL
+}
+
+enum DispatchStatus {
+  CREATED
+  DISPATCHED
+  RECEIVED
+  MATCHED
+  DISCREPANCY
+  RESOLVED
+}
+
+enum DispatchKind {
+  DISPATCH
+  TRANSFER
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ApprovalType {
+  FULL
+  PARTIAL
+}
+
+enum IssueStatus {
+  OPEN
+  RESOLVED
+}
+
+enum IssueSource {
+  AUTO
+  SHOP
+}
+
+enum IssueType {
+  DISPATCH_DISCREPANCY
+  CASH_VARIANCE
+  NEGATIVE_SOLD
+  MISSING_CLOSING
+  DAMAGED_GOODS
+  TRANSFER_PROBLEM
+  OTHER
+}
+
+enum LedgerType {
+  PURCHASE
+  DISPATCH_OUT
+  RECEIVE_IN
+  SOLD
+  ADJUSTMENT
+}
+
+model User {
+  id             String    @id @default(cuid())
+  username       String    @unique
+  passwordHash   String
+  name           String
+  phone          String
+  role           Role
+  shopId         String?
+  shop           Shop?     @relation(fields: [shopId], references: [id])
+  permissions    String[]
+  isActive       Boolean   @default(true)
+  failedAttempts Int       @default(0)
+  lockedUntil    DateTime?
+  language       String    @default("en")
+  createdAt      DateTime  @default(now())
+  devices        Device[]
+  otps           OtpChallenge[]
+}
+
+model Device {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  deviceId  String
+  trustedAt DateTime @default(now())
+
+  @@unique([userId, deviceId])
+}
+
+model OtpChallenge {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  codeHash   String
+  deviceId   String
+  expiresAt  DateTime
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+}
+
+model Shop {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  nameEn    String
+  nameTa    String
+  type      ShopType
+  parentId  String?
+  parent    Shop?    @relation("ShopHierarchy", fields: [parentId], references: [id])
+  children  Shop[]   @relation("ShopHierarchy")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  users     User[]
+}
+
+model Item {
+  id        String      @id @default(cuid())
+  code      String      @unique
+  nameEn    String
+  nameTa    String
+  isActive  Boolean     @default(true)
+  sortOrder Int         @default(0)
+  createdAt DateTime    @default(now())
+  prices    ItemPrice[]
+}
+
+/// Effective-dated selling price, one per item for the whole network.
+model ItemPrice {
+  id              String   @id @default(cuid())
+  itemId          String
+  item            Item     @relation(fields: [itemId], references: [id])
+  pricePaisePerKg Int
+  /// IST business date from which this price applies.
+  effectiveFrom   String
+  createdById     String?
+  createdAt       DateTime @default(now())
+
+  @@unique([itemId, effectiveFrom])
+  @@index([itemId, effectiveFrom])
+}
+
+model Vendor {
+  id        String     @id @default(cuid())
+  nameEn    String
+  nameTa    String     @default("")
+  phone     String     @default("")
+  supplies  String     @default("")
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  purchases Purchase[]
+}
+
+model Purchase {
+  id             String   @id @default(cuid())
+  vendorId       String
+  vendor         Vendor   @relation(fields: [vendorId], references: [id])
+  itemId         String
+  qtyGrams       Int
+  costPaisePerKg Int
+  date           String
+  invoiceNo      String
+  createdById    String
+  createdAt      DateTime @default(now())
+}
+
+/// Every stock movement. Current stock = SUM(qtyGrams). Never updated or deleted.
+model StockLedger {
+  id          BigInt     @id @default(autoincrement())
+  shopId      String
+  itemId      String
+  qtyGrams    Int
+  type        LedgerType
+  refType     String
+  refId       String
+  /// When the movement happened (closing windows use this, not createdAt).
+  effectiveAt DateTime   @default(now())
+  createdById String?
+  note        String?
+  createdAt   DateTime   @default(now())
+
+  @@index([shopId, itemId, effectiveAt])
+  @@index([shopId, type, effectiveAt])
+  @@index([refType, refId])
+}
+
+model Dispatch {
+  id            String         @id @default(cuid())
+  number        Int            @unique @default(autoincrement())
+  kind          DispatchKind
+  sourceShopId  String
+  destShopId    String
+  status        DispatchStatus @default(CREATED)
+  deliveryCode  String
+  codeUsedAt    DateTime?
+  requestId     String?        @unique
+  photoKey      String?
+  createdById   String
+  createdAt     DateTime       @default(now())
+  dispatchedAt  DateTime?
+  dispatchedById String?
+  receivedAt    DateTime?
+  receivedById  String?
+  resolvedAt    DateTime?
+  lines         DispatchLine[]
+
+  @@index([destShopId, status])
+  @@index([sourceShopId, status])
+}
+
+model DispatchLine {
+  id            String   @id @default(cuid())
+  dispatchId    String
+  dispatch      Dispatch @relation(fields: [dispatchId], references: [id])
+  itemId        String
+  orderedGrams  Int
+  sentGrams     Int?
+  receivedGrams Int?
+
+  @@unique([dispatchId, itemId])
+}
+
+/// Wrong delivery-code attempts, for rate limiting code guessing.
+model CodeAttempt {
+  id        String   @id @default(cuid())
+  shopId    String
+  createdAt DateTime @default(now())
+
+  @@index([shopId, createdAt])
+}
+
+model StockRequest {
+  id           String        @id @default(cuid())
+  number       Int           @unique @default(autoincrement())
+  clientId     String        @unique
+  shopId       String
+  status       RequestStatus @default(PENDING)
+  approvalType ApprovalType?
+  reason       String
+  rejectReason String?
+  createdById  String
+  createdAt    DateTime      @default(now())
+  decidedById  String?
+  decidedAt    DateTime?
+  lines        RequestLine[]
+
+  @@index([shopId, createdAt])
+  @@index([status])
+}
+
+model RequestLine {
+  id             String       @id @default(cuid())
+  requestId      String
+  request        StockRequest @relation(fields: [requestId], references: [id])
+  itemId         String
+  requestedGrams Int
+  approvedGrams  Int?
+
+  @@unique([requestId, itemId])
+}
+
+model Issue {
+  id                 String      @id @default(cuid())
+  number             Int         @unique @default(autoincrement())
+  /// Shop-raised issues carry the device's id; auto issues use a deterministic key.
+  clientId           String      @unique
+  shopId             String
+  source             IssueSource
+  type               IssueType
+  description        String
+  status             IssueStatus @default(OPEN)
+  dispatchId         String?
+  closingId          String?
+  raisedById         String?
+  createdAt          DateTime    @default(now())
+  recountRequestedAt DateTime?
+  recountRequestedBy String?
+  recount            Json?
+  recountAt          DateTime?
+  resolutionNote     String?
+  resolvedById       String?
+  resolvedAt         DateTime?
+
+  @@index([status, createdAt])
+  @@index([shopId])
+}
+
+model DailyClosing {
+  id                   String        @id @default(cuid())
+  clientId             String        @unique
+  shopId               String
+  businessDate         String
+  capturedAt           DateTime
+  cashPaise            Int
+  upiPaise             Int
+  expectedRevenuePaise Int
+  variancePaise        Int
+  varianceFlagged      Boolean
+  note                 String        @default("")
+  submittedById        String
+  submittedAt          DateTime      @default(now())
+  lines                ClosingLine[]
+
+  @@unique([shopId, businessDate])
+  @@index([businessDate])
+}
+
+model ClosingLine {
+  id              String       @id @default(cuid())
+  closingId       String
+  closing         DailyClosing @relation(fields: [closingId], references: [id])
+  itemId          String
+  openingGrams    Int
+  receivedGrams   Int
+  sentOutGrams    Int
+  adjustmentGrams Int
+  closingGrams    Int
+  soldGrams       Int
+  pricePaisePerKg Int
+  expectedPaise   Int
+
+  @@unique([closingId, itemId])
+}
+
+model Setting {
+  key   String @id
+  value String
+}
+
+/// Append-only. UPDATE and DELETE are blocked by a database trigger.
+model AuditLog {
+  id         BigInt   @id @default(autoincrement())
+  at         DateTime @default(now())
+  actorId    String?
+  actorName  String
+  action     String
+  entityType String
+  entityId   String
+  summary    String
+  before     Json?
+  after      Json?
+  ip         String?
+
+  @@index([at])
+  @@index([entityType, entityId])
+  @@index([action])
+}

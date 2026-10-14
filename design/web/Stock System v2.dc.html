@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Anek+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ta:block;--en:block;--accent:#1f5a3d;--rowpad:13px}
+*{box-sizing:border-box}
+body{margin:0;background:#f0ebdf;font-family:'Anek Latin',system-ui,sans-serif;color:#173a2a;-webkit-font-smoothing:antialiased}
+a{color:#1f5a3d}a:hover{color:#17462f}
+input,button,textarea{font-family:inherit}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#d8cfb8;border-radius:8px;border:3px solid transparent;background-clip:content-box}
+@keyframes blip{0%,100%{opacity:1}50%{opacity:.25}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;flex-direction:column">
+
+<header style="display:flex;align-items:center;gap:20px;padding:14px 24px;background:#173a2a;color:#f2f2ec;flex-wrap:wrap">
+  <div style="display:flex;align-items:baseline;gap:10px">
+    <span style="display:flex;flex-direction:column;align-items:center;gap:3px;padding-right:12px;border-right:1px solid #2f5a45"><span style="font:700 20px/1 'Anek Tamil';color:#e3b85a">அறம்</span><span style="font:600 8px/1 'Anek Latin';letter-spacing:.42em;color:#e3b85a;margin-right:-.42em">ARAM</span></span>
+    <span style="display:flex;flex-direction:column;gap:3px"><span style="font:600 13px/1 'Anek Latin';letter-spacing:.02em">Stock &amp; Sales</span><span style="font:400 11px/1 'Anek Tamil';color:#a9bfb0;display:var(--ta)">இருப்பு &amp; விற்பனை</span></span>
+  </div>
+  <div style="display:flex;gap:2px;background:#224b37;border-radius:8px;padding:3px">
+    <button onClick="{{ showWeb }}" style="{{ tabWeb }}">Head Office — Web</button>
+    <button onClick="{{ showApp }}" style="{{ tabApp }}">Shop Staff — Android</button>
+  </div>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:14px;font:400 11px/1 'IBM Plex Mono';color:#a39c86">
+    <span>380 shops · 1 HO · 10 supervisors · 369 small</span>
+    <span style="display:flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:50%;background:#6fae8c"></span>All systems live</span>
+  </div>
+</header>
+
+<sc-if value="{{ isWeb }}" hint-placeholder-val="{{ true }}">
+<div style="flex:1;display:grid;grid-template-columns:236px minmax(0,1fr);min-height:0">
+
+  <nav style="background:#ece6d6;border-right:1px solid #ddd5c1;padding:16px 12px;display:flex;flex-direction:column;gap:2px">
+    <div style="font:500 10px/1 'IBM Plex Mono';letter-spacing:.09em;color:#8c8570;padding:6px 10px 10px">NETWORK</div>
+    <button onClick="{{ goOverview }}" style="{{ navOverview }}"><span style="display:var(--en)">Overview</span><span style="font:400 11px/1.4 'Anek Tamil';color:#8c8570;display:var(--ta)">கண்ணோட்டம்</span></button>
+    <button onClick="{{ goShops }}" style="{{ navShops }}"><span style="display:var(--en)">Shops</span><span style="font:400 11px/1.4 'Anek Tamil';color:#8c8570;display:var(--ta)">கடைகள்</span></button>
+    <div style="font:500 10px/1 'IBM Plex Mono';letter-spacing:.09em;color:#8c8570;padding:16px 10px 10px">STOCK MOVEMENT</div>
+    <button onClick="{{ goDispatches }}" style="{{ navDispatches }}"><span style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="display:var(--en)">Dispatches &amp; transfers</span><span style="font:600 10px/1 'IBM Plex Mono';background:#9b2335;color:#fff;border-radius:20px;padding:3px 6px">3</span></span><span style="font:400 11px/1.4 'Anek Tamil';color:#8c8570;display:var(--ta)">அனுப்புதல் &amp; இடமாற்றம்</span></button>
+    <button onClick="{{ goRequests }}" style="{{ navRequests }}"><span style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="display:var(--en)">Requests</span><span style="font:600 10px/1 'IBM Plex Mono';background:#9a6a12;color:#fff;border-radius:20px;padding:3px 6px">12</span></span><span style="font:400 11px/1.4 'Anek Tamil';color:#8c8570;display:var(--ta)">கோரிக்கைகள்</span></button>
+    <button onClick="{{ goIssues }}" style="{{ navIssues }}"><span style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span style="display:var(--en)">Issues</span><span style="font:600 10px/1 'IBM Plex Mono';background:#9b2335;color:#fff;border-radius:20px;padding:3px 6px">7</span></span><span style="font:400 11px/1.4 'Anek Tamil';color:#8c8570;display:var(--ta)">பிரச்சினைகள்</span></button>
+    <div style="font:500 10px/1 'IBM Plex Mono';letter-spacing:.09em;color:#8c8570;padding:16px 10px 10px">CATALOGUE</div>
+    <button onClick="{{ goItems }}" style="{{ navItems }}"><span style="display:var(--en)">Items &amp; prices</span><span style="font:400 11px/1.4 'Anek Tamil';color:#8c8570;display:var(--ta)">பொருட்கள் &amp; விலைகள்</span></button>
+    <button onClick="{{ goVendors }}" style="{{ navVendors }}"><span style="display:var(--en)">Vendors &amp; purchases</span><span style="font:400 11px/1.4 'Anek Tamil';color:#8c8570;display:var(--ta)">விற்பனையாளர் &amp; கொள்முதல்</span></button>
+    <div style="font:500 10px/1 'IBM Plex Mono';letter-spacing:.09em;color:#8c8570;padding:16px 10px 10px">CONTROL</div>
+    <button onClick="{{ goAdmins }}" style="{{ navAdmins }}"><span style="display:var(--en)">Admins &amp; permissions</span><span style="font:400 11px/1.4 'Anek Tamil';color:#8c8570;display:var(--ta)">நிர்வாகிகள் &amp; அனுமதிகள்</span></button>
+    <button onClick="{{ goAudit }}" style="{{ navAudit }}"><span style="display:var(--en)">Activity log</span><span style="font:400 11px/1.4 'Anek Tamil';color:#8c8570;display:var(--ta)">செயல் பதிவு</span></button>
+    <div style="margin-top:auto;padding:12px 10px 4px;border-top:1px solid #ddd5c1;display:flex;align-items:center;gap:9px">
+      <div style="width:28px;height:28px;border-radius:50%;background:#1f5a3d;color:#fff;font:600 11px/28px 'Anek Latin';text-align:center">RK</div>
+      <div style="min-width:0">
+        <div style="font:500 12px/1.3 'Anek Latin';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">R. Karthikeyan</div>
+        <div style="font:400 10px/1.3 'IBM Plex Mono';color:#8c8570">Super Admin</div>
+      </div>
+    </div>
+  </nav>
+
+  <main style="min-width:0;background:#f8f5ed;overflow:auto">
+
+  <sc-if value="{{ onOverview }}" hint-placeholder-val="{{ true }}">
+  <div style="padding:26px 28px 40px;display:flex;flex-direction:column;gap:22px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div>
+        <h1 style="margin:0;font:600 22px/1.2 'Anek Latin';display:var(--en)">Network overview</h1>
+        <div style="font:400 14px/1.4 'Anek Tamil';color:#6a6454;display:var(--ta)">வலையமைப்பு கண்ணோட்டம்</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span style="font:400 11px/1 'IBM Plex Mono';color:#8c8570">Tue 21 Sep 2026 · 18:40 IST</span>
+        <button style="border:1px solid #ddd5c1;background:#fff;border-radius:7px;padding:8px 12px;font:500 12px/1 'Anek Latin';cursor:pointer;white-space:nowrap">Export day sheet</button>
+        <button onClick="{{ goDispatches }}" style="border:0;background:var(--accent);color:#fff;border-radius:7px;padding:9px 14px;font:500 12px/1 'Anek Latin';cursor:pointer">New dispatch</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px">
+      <div style="background:#fff;border:1px solid #e7e0cd;border-radius:10px;padding:16px">
+        <div style="font:500 11px/1.3 'Anek Latin';color:#6a6454;display:var(--en)">Stock across network</div>
+        <div style="font:400 11px/1.4 'Anek Tamil';color:#a39c86;display:var(--ta)">மொத்த இருப்பு</div>
+        <div style="margin-top:10px;font:600 28px/1 'IBM Plex Mono';letter-spacing:-.02em">184,320<span style="font:400 13px/1 'Anek Latin';color:#8c8570;margin-left:5px">kg</span></div>
+        <div style="margin-top:8px;font:400 11px/1.4 'IBM Plex Mono';color:#6a6454">HO 121,050 · Supervisors 63,270</div>
+      </div>
+      <div style="background:#fff;border:1px solid #e7e0cd;border-radius:10px;padding:16px">
+        <div style="font:500 11px/1.3 'Anek Latin';color:#6a6454;display:var(--en)">Today's sales</div>
+        <div style="font:400 11px/1.4 'Anek Tamil';color:#a39c86;display:var(--ta)">இன்றைய விற்பனை</div>
+        <div style="margin-top:10px;font:600 28px/1 'IBM Plex Mono';letter-spacing:-.02em">₹41.8L</div>
+        <div style="margin-top:8px;display:flex;gap:6px;align-items:center;font:400 11px/1.4 'IBM Plex Mono';color:#6a6454">
+          <span style="flex:1;height:6px;border-radius:3px;background:#ece6d6;overflow:hidden;display:block"><span style="display:block;width:62%;height:100%;background:#1f5a3d"></span></span>
+          <span>62% cash</span>
+        </div>
+      </div>
+      <div style="background:#fff;border:1px solid #ecc9ce;border-radius:10px;padding:16px;box-shadow:inset 3px 0 0 #9b2335">
+        <div style="font:500 11px/1.3 'Anek Latin';color:#85192b;display:var(--en)">Money gaps today</div>
+        <div style="font:400 11px/1.4 'Anek Tamil';color:#85192b;display:var(--ta)">பண வித்தியாசம்</div>
+        <div style="margin-top:10px;font:600 28px/1 'IBM Plex Mono';letter-spacing:-.02em;color:#85192b">−₹12,480</div>
+        <div style="margin-top:8px;font:400 11px/1.4 'IBM Plex Mono';color:#6a6454">across 9 shops · 4 over ₹1,000</div>
+      </div>
+      <div style="background:#fff;border:1px solid #e7e0cd;border-radius:10px;padding:16px">
+        <div style="font:500 11px/1.3 'Anek Latin';color:#6a6454;display:var(--en)">Closings submitted</div>
+        <div style="font:400 11px/1.4 'Anek Tamil';color:#a39c86;display:var(--ta)">நாள் இறுதி கணக்கு</div>
+        <div style="margin-top:10px;font:600 28px/1 'IBM Plex Mono';letter-spacing:-.02em">341<span style="font:400 15px/1 'IBM Plex Mono';color:#8c8570">/379</span></div>
+        <div style="margin-top:8px;font:400 11px/1.4 'IBM Plex Mono';color:#9a6a12">38 still open at 18:40</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px;align-items:start">
+
+      <section style="background:#fff;border:1px solid #e7e0cd;border-radius:10px;overflow:hidden">
+        <div style="padding:14px 16px;border-bottom:1px solid #efe9da;display:flex;align-items:center;gap:10px">
+          <span style="width:8px;height:8px;border-radius:50%;background:#9b2335;animation:blip 2.4s infinite"></span>
+          <span style="font:600 13px/1.2 'Anek Latin';display:var(--en)">Needs attention now</span>
+          <span style="font:400 12px/1.3 'Anek Tamil';color:#8c8570;display:var(--ta)">உடனடி கவனம்</span>
+          <span style="margin-left:auto;font:500 11px/1 'IBM Plex Mono';color:#8c8570">19 items</span>
+        </div>
+        <sc-for list="{{ attention }}" as="row" hint-placeholder-count="5">
+          <button onClick="{{ row.open }}" style="width:100%;text-align:left;display:grid;grid-template-columns:78px minmax(0,1fr) auto;gap:12px;align-items:center;padding:var(--rowpad) 16px;border:0;border-bottom:1px solid #f3efe4;background:#fff;cursor:pointer" style-hover="background:#faf7ef">
+            <span style="font:600 9px/1 'IBM Plex Mono';letter-spacing:.06em;padding:5px 6px;border-radius:5px;text-align:center;background:{{ row.tagBg }};color:{{ row.tagFg }}">{{ row.tag }}</span>
+            <span style="min-width:0">
+              <span style="display:block;font:500 13px/1.3 'Anek Latin';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ row.title }}</span>
+              <span style="display:block;font:400 11px/1.4 'Anek Tamil';color:#8c8570">{{ row.titleTa }}</span>
+            </span>
+            <span style="font:600 13px/1 'IBM Plex Mono';color:{{ row.valFg }};white-space:nowrap">{{ row.value }}</span>
+          </button>
+        </sc-for>
+      </section>
+
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <section style="background:#fff;border:1px solid #e7e0cd;border-radius:10px;padding:16px">
+          <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px">
+            <span style="font:600 13px/1.2 'Anek Latin';display:var(--en)">Dispatch pipeline</span>
+            <span style="font:400 12px/1.3 'Anek Tamil';color:#8c8570;display:var(--ta)">அனுப்புதல் நிலை</span>
+          </div>
+          <div style="display:flex;gap:6px;align-items:stretch">
+            <sc-for list="{{ pipeline }}" as="st" hint-placeholder-count="5">
+              <div style="flex:1;min-width:0;border-radius:8px;padding:11px 10px;background:{{ st.bg }}">
+                <div style="font:600 20px/1 'IBM Plex Mono';color:{{ st.fg }}">{{ st.n }}</div>
+                <div style="margin-top:6px;font:500 10px/1.2 'Anek Latin';color:{{ st.fg }}">{{ st.label }}</div>
+                <div style="font:400 10px/1.3 'Anek Tamil';color:{{ st.fg }};opacity:.72">{{ st.labelTa }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+
+        <section style="background:#fff;border:1px solid #e7e0cd;border-radius:10px;overflow:hidden">
+          <div style="padding:14px 16px;border-bottom:1px solid #efe9da;display:flex;align-items:baseline;gap:10px">
+            <span style="font:600 13px/1.2 'Anek Latin';display:var(--en)">Shops running low</span>
+            <span style="font:400 12px/1.3 'Anek Tamil';color:#8c8570;display:var(--ta)">இருப்பு குறைவான கடைகள்</span>
+            <button onClick="{{ goShops }}" style="margin-left:auto;border:0;background:none;color:var(--accent);font:500 11px/1 'Anek Latin';cursor:pointer">View all 24</button>
+          </div>
+          <sc-for list="{{ lowStock }}" as="row" hint-placeholder-count="4">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) 86px 64px;gap:10px;align-items:center;padding:11px 16px;border-bottom:1px solid #f3efe4">
+              <span style="min-width:0">
+                <span style="display:block;font:500 12px/1.3 'Anek Latin';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ row.shop }}</span>
+                <span style="display:block;font:400 10px/1.3 'IBM Plex Mono';color:#8c8570">{{ row.sup }}</span>
+              </span>
+              <span style="font:400 11px/1.3 'Anek Latin';color:#6a6454">{{ row.item }}<span style="display:block;font:400 10px/1.3 'Anek Tamil';color:#a39c86">{{ row.itemTa }}</span></span>
+              <span style="text-align:right;font:600 12px/1 'IBM Plex Mono';color:#9a6a12">{{ row.kg }}</span>
+            </div>
+          </sc-for>
+        </section>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ onShops }}" hint-placeholder-val="{{ false }}">
+  <div style="padding:26px 28px 40px;display:flex;flex-direction:column;gap:18px">
+    <div>
+      <h1 style="margin:0;font:600 22px/1.2 'Anek Latin';display:var(--en)">Shops</h1>
+      <div style="font:400 14px/1.4 'Anek Tamil';color:#6a6454;display:var(--ta)">கடைகள்</div>
+    </div>
+    <div style="display:grid;grid-template-columns:minmax(300px,420px) minmax(0,1fr);gap:16px;align-items:start">
+      <section style="background:#fff;border:1px solid #e7e0cd;border-radius:10px;overflow:hidden">
+        <div style="padding:12px 14px;border-bottom:1px solid #efe9da;display:flex;gap:8px;align-items:center">
+          <input placeholder="Search shop or code…" style="flex:1;min-width:0;border:1px solid #e2dbc8;border-radius:7px;padding:8px 10px;font:400 12px/1 'Anek Latin';background:#fcfaf4" />
+          <span style="font:400 10px/1 'IBM Plex Mono';color:#8c8570">10 / 369</span>
+        </div>
+        <sc-for list="{{ supervisors }}" as="sup" hint-placeholder-count="3">
+          <div>
+            <button onClick="{{ sup.toggle }}" style="width:100%;text-align:left;display:flex;align-items:center;gap:10px;padding:12px 14px;border:0;border-bottom:1px solid #f3efe4;background:#faf7ef;cursor:pointer">
+              <span style="font:500 12px/1 'IBM Plex Mono';color:#8c8570;width:10px">{{ sup.caret }}</span>
+              <span style="min-width:0;flex:1">
+                <span style="display:block;font:600 13px/1.3 'Anek Latin'">{{ sup.name }}</span>
+                <span style="display:block;font:400 11px/1.4 'Anek Tamil';color:#8c8570">{{ sup.nameTa }}</span>
+              </span>
+              <span style="text-align:right">
+                <span style="display:block;font:600 12px/1 'IBM Plex Mono'">{{ sup.kg }} kg</span>
+                <span style="display:block;font:400 10px/1.4 'IBM Plex Mono';color:#8c8570">{{ sup.count }} shops</span>
+              </span>
+              <sc-if value="{{ sup.flag }}" hint-placeholder-val="{{ false }}">
+                <span style="font:600 9px/1 'IBM Plex Mono';background:#fae9e7;color:#85192b;padding:5px 6px;border-radius:5px">{{ sup.flag }}</span>
+              </sc-if>
+            </button>
+            <sc-if value="{{ sup.open }}" hint-placeholder-val="{{ false }}">
+              <sc-for list="{{ sup.shops }}" as="sh" hint-placeholder-count="4">
+                <button onClick="{{ sh.select }}" style="width:100%;text-align:left;display:grid;grid-template-columns:minmax(0,1fr) 78px 70px;gap:8px;align-items:center;padding:10px 14px 10px 34px;border:0;border-bottom:1px solid #f7f3e9;background:{{ sh.bg }};cursor:pointer">
+                  <span style="min-width:0">
+                    <span style="display:block;font:500 12px/1.3 'Anek Latin';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ sh.name }}</span>
+                    <span style="display:block;font:400 10px/1.4 'Anek Tamil';color:#8c8570">{{ sh.nameTa }}</span>
+                  </span>
+                  <span style="text-align:right;font:500 11px/1 'IBM Plex Mono';color:#6a6454">{{ sh.kg }} kg</span>
+                  <span style="text-align:right;font:500 10px/1 'IBM Plex Mono';color:{{ sh.stFg }}">{{ sh.st }}</span>
+                </button>
+              </sc-for>
+            </sc-if>
+          </div>
+        </sc-for>
+      </section>
+
+      <section style="background:#fff;border:1px solid #e7e0cd;border-radius:10px;overflow:hidden">
+        <div style="padding:16px 18px;border-bottom:1px solid #efe9da;display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+          <div style="min-width:0">
+            <div style="font:600 16px/1.3 'Anek Latin'">{{ shop.name }}</div>
+            <div style="font:400 13px/1.4 'Anek Tamil';color:#6a6454">{{ shop.nameTa }}</div>
+            <div style="margin-top:6px;font:400 11px/1.4 'IBM Plex Mono';color:#8c8570">{{ shop.meta }}</div>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <button style="border:1px solid #ddd5c1;background:#fff;border-radius:7px;padding:8px 12px;font:500 12px/1 'Anek Latin';cursor:pointer">Sales history</button>
+            <button onClick="{{ goDispatches }}" style="border:0;background:var(--accent);color:#fff;border-radius:7px;padding:8px 12px;font:500 12px/1 'Anek Latin';cursor:pointer">Dispatch stock</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border-bottom:1px solid #efe9da">
+          <div style="padding:14px 18px;border-right:1px solid #f3efe4">
+            <div style="font:400 10px/1.3 'IBM Plex Mono';color:#8c8570">STOCK ON HAND</div>
+            <div style="margin-top:6px;font:600 20px/1 'IBM Plex Mono'">1,842 kg</div>
+          </div>
+          <div style="padding:14px 18px;border-right:1px solid #f3efe4">
+            <div style="font:400 10px/1.3 'IBM Plex Mono';color:#8c8570">SALES TODAY</div>
+            <div style="margin-top:6px;font:600 20px/1 'IBM Plex Mono'">₹38,910</div>
+          </div>
+          <div style="padding:14px 18px;border-right:1px solid #f3efe4">
+            <div style="font:400 10px/1.3 'IBM Plex Mono';color:#8c8570">CASH / UPI</div>
+            <div style="margin-top:6px;font:600 20px/1 'IBM Plex Mono'">24.1k<span style="color:#8c8570"> / </span>14.8k</div>
+          </div>
+          <div style="padding:14px 18px;background:#fdf3ea">
+            <div style="font:400 10px/1.3 'IBM Plex Mono';color:#9a6a12">MONEY GAP</div>
+            <div style="margin-top:6px;font:600 20px/1 'IBM Plex Mono';color:#9a6a12">−₹1,240</div>
+          </div>
+        </div>
+        <div style="padding:14px 18px 6px;font:600 12px/1 'Anek Latin';color:#6a6454">Stock by item</div>
+        <sc-for list="{{ shopStock }}" as="it" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 120px 96px 90px;gap:10px;align-items:center;padding:10px 18px;border-bottom:1px solid #f7f3e9">
+            <span style="min-width:0">
+              <span style="display:block;font:500 12px/1.3 'Anek Latin'">{{ it.en }}</span>
+              <span style="display:block;font:400 11px/1.4 'Anek Tamil';color:#8c8570">{{ it.ta }}</span>
+            </span>
+            <span style="display:flex;align-items:center;gap:8px">
+              <span style="flex:1;height:5px;background:#efe9da;border-radius:3px;overflow:hidden"><span style="display:block;height:100%;width:{{ it.pct }};background:{{ it.barFg }}"></span></span>
+            </span>
+            <span style="text-align:right;font:600 12px/1 'IBM Plex Mono'">{{ it.kg }} kg</span>
+            <span style="text-align:right;font:500 10px/1 'IBM Plex Mono';color:{{ it.flagFg }}">{{ it.flag }}</span>
+          </div>
+        </sc-for>
+      </section>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ onDispatches }}" hint-placeholder-val="{{ false }}">
+  <div style="padding:26px 28px 40px;display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap">
+      <div>
+        <h1 style="margin:0;font:600 22px/1.2 'Anek Latin';display:var(--en)">Dispatches &amp; transfers</h1>
+        <div style="font:400 14px/1.4 'Anek Tamil';color:#6a6454;display:var(--ta)">அனுப்புதல்கள் &amp; இடமாற்றங்கள்</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button style="border:1px solid #ddd5c1;background:#fff;border-radius:7px;padding:9px 13px;font:500 12px/1 'Anek Latin';cursor:pointer">Order a transfer</button>
+        <button style="border:0;background:var(--accent);color:#fff;border-radius:7px;padding:9px 14px;font:500 12px/1 'Anek Latin';cursor:pointer">New dispatch</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:minmax(300px,1fr) minmax(360px,1.35fr);gap:16px;align-items:start">
+      <section style="background:#fff;border:1px solid #e7e0cd;border-radius:10px;overflow:hidden">
+        <div style="display:flex;gap:6px;padding:12px 14px;border-bottom:1px solid #efe9da;flex-wrap:wrap">
+          <sc-for list="{{ dispFilters }}" as="f" hint-placeholder-count="6">
+            <span style="font:500 11px/1 'Anek Latin';padding:7px 10px;border-radius:20px;background:{{ f.bg }};color:{{ f.fg }};cursor:pointer">{{ f.label }} <span style="font-family:'IBM Plex Mono';opacity:.7">{{ f.n }}</span></span>
+          </sc-for>
+        </div>
+        <sc-for list="{{ dispatches }}" as="d" hint-placeholder-count="6">
+          <button onClick="{{ d.open }}" style="width:100%;text-align:left;display:grid;grid-template-columns:minmax(0,1fr) 92px 104px;gap:10px;align-items:center;padding:var(--rowpad) 16px;border:0;border-bottom:1px solid #f3efe4;background:{{ d.bg }};cursor:pointer;box-shadow:{{ d.rail }}">
+            <span style="min-width:0">
+              <span style="display:flex;align-items:center;gap:7px">
+                <span style="font:600 11px/1 'IBM Plex Mono';color:#6a6454">{{ d.id }}</span>
+                <span style="font:500 9px/1 'IBM Plex Mono';letter-spacing:.05em;color:#8c8570;border:1px solid #e2dbc8;border-radius:4px;padding:3px 4px">{{ d.type }}</span>
+              </span>
+              <span style="display:block;margin-top:4px;font:500 13px/1.3 'Anek Latin';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.to }}</span>
+              <span style="display:block;font:400 11px/1.4 'Anek Tamil';color:#8c8570">{{ d.toTa }}</span>
+            </span>
+            <span style="text-align:right">
+              <span style="display:block;font:600 12px/1 'IBM Plex Mono'">{{ d.kg }} kg</span>
+              <span style="display:block;margin-top:3px;font:400 10px/1.4 'IBM Plex Mono';color:#8c8570">{{ d.lines }} items</span>
+            </span>
+            <span style="text-align:right">
+              <span style="display:inline-block;font:600 10px/1 'IBM Plex Mono';padding:6px 8px;border-radius:5px;background:{{ d.stBg }};color:{{ d.stFg }}">{{ d.status }}</span>
+              <span style="display:block;margin-top:4px;font:400 10px/1.3 'IBM Plex Mono';color:#a39c86">{{ d.when }}</span>
+            </span>
+          </button>
+        </sc-for>
+      </section>
+
+      <section style="background:#fff;border:1px solid #e7e0cd;border-radius:10px;overflow:hidden;position:sticky;top:0">
+        <div style="padding:16px 18px;border-bottom:1px solid #efe9da">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font:600 16px/1.2 'IBM Plex Mono'">{{ det.id }}</span>
+            <span style="font:600 10px/1 'IBM Plex Mono';padding:6px 8px;border-radius:5px;background:{{ det.stBg }};color:{{ det.stFg }}">{{ det.status }}</span>
+            <span style="margin-left:auto;font:400 11px/1 'IBM Plex Mono';color:#8c8570">code {{ det.code }}</span>
+          </div>
+          <div style="margin-top:8px;font:500 14px/1.3 'Anek Latin'">Head Office → {{ det.to }}</div>
+          <div style="font:400 12px/1.4 'Anek Tamil';color:#6a6454">தலைமை அலுவலகம் → {{ det.toTa }}</div>
+        </div>
+        <div style="display:flex;gap:0;padding:12px 18px;border-bottom:1px solid #efe9da;flex-wrap:wrap">
+          <sc-for list="{{ det.trail }}" as="t" hint-placeholder-count="4">
+            <div style="flex:1;min-width:110px;padding-right:12px">
+              <div style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:{{ t.dot }}"></span><span style="font:500 11px/1 'Anek Latin';color:{{ t.fg }}">{{ t.label }}</span></div>
+              <div style="margin-top:4px;padding-left:14px;font:400 10px/1.4 'IBM Plex Mono';color:#a39c86">{{ t.when }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 72px 72px 72px 78px;gap:8px;padding:10px 18px;background:#faf7ef;border-bottom:1px solid #efe9da;font:500 10px/1 'IBM Plex Mono';letter-spacing:.05em;color:#8c8570">
+          <span>ITEM</span><span style="text-align:right">ORDERED</span><span style="text-align:right">SENT</span><span style="text-align:right">RECEIVED</span><span style="text-align:right">DIFF</span>
+        </div>
+        <sc-for list="{{ det.lines }}" as="l" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 72px 72px 72px 78px;gap:8px;align-items:center;padding:11px 18px;border-bottom:1px solid #f7f3e9;background:{{ l.bg }}">
+            <span style="min-width:0">
+              <span style="display:block;font:500 12px/1.3 'Anek Latin'">{{ l.en }}</span>
+              <span style="display:block;font:400 11px/1.4 'Anek Tamil';color:#8c8570">{{ l.ta }}</span>
+            </span>
+            <span style="text-align:right;font:400 12px/1 'IBM Plex Mono';color:#6a6454">{{ l.ordered }}</span>
+            <span style="text-align:right;font:400 12px/1 'IBM Plex Mono';color:#6a6454">{{ l.sent }}</span>
+            <span style="text-align:right;font:600 12px/1 'IBM Plex Mono'">{{ l.received }}</span>
+            <span style="text-align:right;font:600 12px/1 'IBM Plex Mono';color:{{ l.diffFg }}">{{ l.diff }}</span>
+          </div>
+        </sc-for>
+        <div style="display:grid;grid-template-columns:minmax(200px,1fr) 190px;gap:16px;padding:16px 18px">
+          <div>
+            <div style="font:500 12px/1 'Anek Latin';color:#6a6454">Auto-raised issue</div>
+            <div style="margin-top:8px;background:#fdf1ef;border:1px solid #ecc9ce;border-radius:8px;padding:12px">
+              <div style="font:600 12px/1.3 'Anek Latin';color:#85192b">{{ det.issue }}</div>
+              <div style="font:400 11px/1.5 'Anek Tamil';color:#85192b;opacity:.85">{{ det.issueTa }}</div>
+              <textarea placeholder="Resolution note…" style="margin-top:10px;width:100%;height:56px;border:1px solid #e8d4d0;border-radius:6px;padding:8px;font:400 12px/1.4 'Anek Latin';background:#fff;resize:none"></textarea>
+              <div style="margin-top:8px;display:flex;gap:8px">
+                <button onClick="{{ resolveDet }}" style="border:0;background:#85192b;color:#fff;border-radius:6px;padding:8px 12px;font:500 12px/1 'Anek Latin';cursor:pointer">Mark resolved</button>
+                <button style="border:1px solid #e0cfcb;background:#fff;color:#85192b;border-radius:6px;padding:8px 12px;font:500 12px/1 'Anek Latin';cursor:pointer">Ask shop to recount</button>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div style="font:500 12px/1 'Anek Latin';color:#6a6454">Delivery photo</div>
+            <div style="margin-top:8px;height:140px;border-radius:8px;border:1px solid #e2dbc8;background:repeating-linear-gradient(135deg,#efe9da 0 8px,#f7f3e9 8px 16px);display:flex;align-items:flex-end;justify-content:center;padding:10px">
+              <span style="font:400 10px/1.4 'IBM Plex Mono';color:#8c8570;background:#fffffcdd;padding:4px 6px;border-radius:4px">photo from shop · 17:12</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ onRequests }}" hint-placeholder-val="{{ false }}">
+  <div style="padding:26px 28px 40px;display:flex;flex-direction:column;gap:18px">
+    <div>
+      <h1 style="margin:0;font:600 22px/1.2 'Anek Latin';display:var(--en)">Stock requests</h1>
+      <div style="font:400 14px/1.4 'Anek Tamil';color:#6a6454;display:var(--ta)">இருப்பு கோரிக்கைகள்</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <sc-for list="{{ requests }}" as="r" hint-placeholder-count="4">
+        <section style="background:#fff;border:1px solid #e7e0cd;border-radius:10px;overflow:hidden;box-shadow:{{ r.rail }}">
+          <div style="display:flex;gap:14px;align-items:flex-start;padding:14px 16px;flex-wrap:wrap">
+            <div style="min-width:180px">
+              <div style="font:600 13px/1.3 'Anek Latin'">{{ r.shop }}</div>
+              <div style="font:400 11px/1.4 'Anek Tamil';color:#8c8570">{{ r.shopTa }}</div>
+              <div style="margin-top:5px;font:400 10px/1.4 'IBM Plex Mono';color:#a39c86">{{ r.id }} · {{ r.when }}</div>
+            </div>
+            <div style="flex:1;min-width:220px;display:flex;flex-wrap:wrap;gap:6px">
+              <sc-for list="{{ r.items }}" as="i" hint-placeholder-count="3">
+                <span style="border:1px solid #e7e0cd;border-radius:7px;padding:6px 9px;font:500 11px/1.2 'Anek Latin';background:#fcfaf4">{{ i.en }} <span style="font-family:'IBM Plex Mono';color:var(--accent)">{{ i.kg }}kg</span><span style="display:block;font:400 10px/1.3 'Anek Tamil';color:#8c8570">{{ i.ta }}</span></span>
+              </sc-for>
+            </div>
+            <div style="min-width:170px;max-width:240px">
+              <div style="font:400 10px/1.3 'IBM Plex Mono';color:#a39c86">REASON</div>
+              <div style="font:400 12px/1.45 'Anek Latin';color:#3e4239">{{ r.reason }}</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:11px 16px;border-top:1px solid #f3efe4;background:#faf9f4;flex-wrap:wrap">
+            <span style="font:400 11px/1.4 'IBM Plex Mono';color:#8c8570">Shop holds {{ r.onHand }} kg · burn {{ r.burn }} kg/day</span>
+            <span style="margin-left:auto;display:flex;gap:8px;align-items:center">
+              <sc-if value="{{ r.pending }}" hint-placeholder-val="{{ true }}">
+                <span style="display:flex;gap:8px">
+                  <button onClick="{{ r.reject }}" style="border:1px solid #e2dbc8;background:#fff;color:#85192b;border-radius:7px;padding:8px 12px;font:500 12px/1 'Anek Latin';cursor:pointer">Reject</button>
+                  <button onClick="{{ r.partial }}" style="border:1px solid #e2dbc8;background:#fff;border-radius:7px;padding:8px 12px;font:500 12px/1 'Anek Latin';cursor:pointer">Approve partially</button>
+                  <button onClick="{{ r.approve }}" style="border:0;background:#3f7d5c;color:#fff;border-radius:7px;padding:8px 14px;font:500 12px/1 'Anek Latin';cursor:pointer">Approve fully</button>
+                </span>
+              </sc-if>
+              <sc-if value="{{ r.done }}" hint-placeholder-val="{{ false }}">
+                <span style="font:600 11px/1 'IBM Plex Mono';padding:8px 10px;border-radius:6px;background:{{ r.doneBg }};color:{{ r.doneFg }}">{{ r.doneLabel }}</span>
+              </sc-if>
+            </span>
+          </div>
+        </section>
+      </sc-for>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ onIssues }}" hint-placeholder-val="{{ false }}">
+  <div style="padding:26px 28px 40px;display:flex;flex-direction:column;gap:18px">
+    <div>
+      <h1 style="margin:0;font:600 22px/1.2 'Anek Latin';display:var(--en)">Issues</h1>
+      <div style="font:400 14px/1.4 'Anek Tamil';color:#6a6454;display:var(--ta)">பிரச்சினைகள்</div>
+    </div>
+    <section style="background:#fff;border:1px solid #e7e0cd;border-radius:10px;overflow:hidden">
+      <div style="display:grid;grid-template-columns:96px minmax(0,1fr) 150px 110px 120px;gap:10px;padding:10px 16px;background:#faf7ef;border-bottom:1px solid #efe9da;font:500 10px/1 'IBM Plex Mono';letter-spacing:.05em;color:#8c8570">
+        <span>SOURCE</span><span>ISSUE</span><span>SHOP</span><span>RAISED</span><span style="text-align:right">ACTION</span>
+      </div>
+      <sc-for list="{{ issues }}" as="is" hint-placeholder-count="5">
+        <div style="display:grid;grid-template-columns:96px minmax(0,1fr) 150px 110px 120px;gap:10px;align-items:center;padding:var(--rowpad) 16px;border-bottom:1px solid #f3efe4;background:{{ is.bg }}">
+          <span style="font:600 9px/1 'IBM Plex Mono';padding:5px 6px;border-radius:5px;text-align:center;background:{{ is.srcBg }};color:{{ is.srcFg }}">{{ is.src }}</span>
+          <span style="min-width:0">
+            <span style="display:block;font:500 12px/1.3 'Anek Latin'">{{ is.title }}</span>
+            <span style="display:block;font:400 11px/1.4 'Anek Tamil';color:#8c8570">{{ is.titleTa }}</span>
+          </span>
+          <span style="font:400 11px/1.4 'Anek Latin';color:#6a6454;min-width:0;overflow:hidden;text-overflow:ellipsis">{{ is.shop }}</span>
+          <span style="font:400 11px/1 'IBM Plex Mono';color:#a39c86">{{ is.when }}</span>
+          <span style="text-align:right">
+            <sc-if value="{{ is.open }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ is.resolve }}" style="border:1px solid #e2dbc8;background:#fff;border-radius:7px;padding:8px 11px;font:500 11px/1 'Anek Latin';cursor:pointer">Resolve…</button>
+            </sc-if>
+            <sc-if value="{{ is.closed }}" hint-placeholder-val="{{ false }}">
+              <span style="font:600 10px/1 'IBM Plex Mono';padding:7px 9px;border-radius:5px;background:#f6eaf1;color:#8d3f6e">RESOLVED</span>
+            </sc-if>
+          </span>
+        </div>
+      </sc-for>
+    </section>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ onItems }}" hint-placeholder-val="{{ false }}">
+  <div style="padding:26px 28px 40px;display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap">
+      <div>
+        <h1 style="margin:0;font:600 22px/1.2 'Anek Latin';display:var(--en)">Items &amp; prices</h1>
+        <div style="font:400 14px/1.4 'Anek Tamil';color:#6a6454;display:var(--ta)">பொருட்கள் &amp; விலைகள்</div>
+        <div style="margin-top:6px;font:400 11px/1.4 'IBM Plex Mono';color:#8c8570">One selling price per item, applied to all 380 shops</div>
+      </div>
+      <button style="border:0;background:var(--accent);color:#fff;border-radius:7px;padding:9px 14px;font:500 12px/1 'Anek Latin';cursor:pointer">Add item</button>
+    </div>
+    <div style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,1fr);gap:16px;align-items:start">
+      <section style="background:#fff;border:1px solid #e7e0cd;border-radius:10px;overflow:hidden">
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 92px 96px 90px 72px;gap:10px;padding:10px 16px;background:#faf7ef;border-bottom:1px solid #efe9da;font:500 10px/1 'IBM Plex Mono';letter-spacing:.05em;color:#8c8570">
+          <span>ITEM</span><span style="text-align:right">PRICE ₹/kg</span><span style="text-align:right">NETWORK KG</span><span style="text-align:right">CHANGED</span><span style="text-align:right">STATE</span>
+        </div>
+        <sc-for list="{{ items }}" as="it" hint-placeholder-count="8">
+          <button onClick="{{ it.select }}" style="width:100%;text-align:left;display:grid;grid-template-columns:minmax(0,1fr) 92px 96px 90px 72px;gap:10px;align-items:center;padding:11px 16px;border:0;border-bottom:1px solid #f7f3e9;background:{{ it.bg }};cursor:pointer;opacity:{{ it.op }}">
+            <span style="min-width:0">
+              <span style="display:block;font:500 12px/1.3 'Anek Latin'">{{ it.en }}</span>
+              <span style="display:block;font:400 11px/1.4 'Anek Tamil';color:#8c8570">{{ it.ta }}</span>
+            </span>
+            <span style="text-align:right;font:600 13px/1 'IBM Plex Mono'">{{ it.price }}</span>
+            <span style="text-align:right;font:400 12px/1 'IBM Plex Mono';color:#6a6454">{{ it.kg }}</span>
+            <span style="text-align:right;font:400 10px/1 'IBM Plex Mono';color:#a39c86">{{ it.changed }}</span>
+            <span style="text-align:right;font:600 9px/1 'IBM Plex Mono';color:{{ it.stFg }}">{{ it.st }}</span>
+          </button>
+        </sc-for>
+      </section>
+      <section style="background:#fff;border:1px solid #e7e0cd;border-radius:10px;padding:18px">
+        <div style="font:600 15px/1.2 'Anek Latin'">{{ item.en }}</div>
+        <div style="font:400 13px/1.4 'Anek Tamil';color:#6a6454">{{ item.ta }}</div>
+        <div style="margin-top:14px;display:flex;gap:10px;align-items:flex-end">
+          <label style="flex:1">
+            <span style="display:block;font:400 10px/1.3 'IBM Plex Mono';color:#8c8570">SELLING PRICE ₹ / kg</span>
+            <input value="{{ item.price }}" style="margin-top:6px;width:100%;border:1px solid #e2dbc8;border-radius:7px;padding:10px;font:600 16px/1 'IBM Plex Mono';background:#fcfaf4" />
+          </label>
+          <button style="border:0;background:var(--accent);color:#fff;border-radius:7px;padding:12px 14px;font:500 12px/1 'Anek Latin';cursor:pointer">Update price</button>
+        </div>
+        <div style="margin-top:10px;font:400 11px/1.5 'Anek Latin';color:#8c8570">Takes effect at next day open across all shops. Requires the <b>Change prices</b> permission.</div>
+        <div style="margin-top:18px;font:500 12px/1 'Anek Latin';color:#6a6454">Price history</div>
+        <sc-for list="{{ priceHistory }}" as="p" hint-placeholder-count="4">
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f7f3e9">
+            <span style="font:400 11px/1 'IBM Plex Mono';color:#a39c86;width:74px">{{ p.date }}</span>
+            <span style="font:600 12px/1 'IBM Plex Mono'">₹{{ p.price }}</span>
+            <span style="font:500 11px/1 'IBM Plex Mono';color:{{ p.dFg }}">{{ p.delta }}</span>
+            <span style="margin-left:auto;font:400 11px/1 'Anek Latin';color:#8c8570">{{ p.by }}</span>
+          </div>
+        </sc-for>
+        <button style="margin-top:16px;width:100%;border:1px solid #e0cfcb;background:#fff;color:#85192b;border-radius:7px;padding:10px;font:500 12px/1 'Anek Latin';cursor:pointer">Deactivate item</button>
+      </section>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ onVendors }}" hint-placeholder-val="{{ false }}">
+  <div style="padding:26px 28px 40px;display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap">
+      <div>
+        <h1 style="margin:0;font:600 22px/1.2 'Anek Latin';display:var(--en)">Vendors &amp; purchases</h1>
+        <div style="font:400 14px/1.4 'Anek Tamil';color:#6a6454;display:var(--ta)">விற்பனையாளர்கள் &amp; கொள்முதல்</div>
+      </div>
+      <button style="border:0;background:var(--accent);color:#fff;border-radius:7px;padding:9px 14px;font:500 12px/1 'Anek Latin';cursor:pointer">Record purchase</button>
+    </div>
+    <div style="display:grid;grid-template-columns:minmax(260px,1fr) minmax(0,1.6fr);gap:16px;align-items:start">
+      <section style="background:#fff;border:1px solid #e7e0cd;border-radius:10px;overflow:hidden">
+        <div style="padding:12px 16px;border-bottom:1px solid #efe9da;font:600 12px/1 'Anek Latin';color:#6a6454">Vendors</div>
+        <sc-for list="{{ vendors }}" as="v" hint-placeholder-count="4">
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid #f7f3e9">
+            <span style="min-width:0;flex:1">
+              <span style="display:block;font:500 12px/1.3 'Anek Latin'">{{ v.name }}</span>
+              <span style="display:block;font:400 11px/1.4 'Anek Tamil';color:#8c8570">{{ v.nameTa }}</span>
+              <span style="display:block;margin-top:3px;font:400 10px/1.3 'IBM Plex Mono';color:#a39c86">{{ v.supplies }}</span>
+            </span>
+            <span style="text-align:right;font:600 12px/1 'IBM Plex Mono'">{{ v.mtd }}</span>
+          </div>
+        </sc-for>
+      </section>
+      <section style="background:#fff;border:1px solid #e7e0cd;border-radius:10px;overflow:hidden">
+        <div style="display:grid;grid-template-columns:86px minmax(0,1fr) 120px 84px 96px;gap:10px;padding:10px 16px;background:#faf7ef;border-bottom:1px solid #efe9da;font:500 10px/1 'IBM Plex Mono';letter-spacing:.05em;color:#8c8570">
+          <span>DATE</span><span>VENDOR / ITEM</span><span style="text-align:right">QTY</span><span style="text-align:right">₹/kg</span><span style="text-align:right">TOTAL</span>
+        </div>
+        <sc-for list="{{ purchases }}" as="p" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:86px minmax(0,1fr) 120px 84px 96px;gap:10px;align-items:center;padding:11px 16px;border-bottom:1px solid #f7f3e9">
+            <span style="font:400 11px/1 'IBM Plex Mono';color:#a39c86">{{ p.date }}</span>
+            <span style="min-width:0">
+              <span style="display:block;font:500 12px/1.3 'Anek Latin'">{{ p.item }}</span>
+              <span style="display:block;font:400 10px/1.4 'Anek Latin';color:#8c8570">{{ p.vendor }}</span>
+            </span>
+            <span style="text-align:right;font:600 12px/1 'IBM Plex Mono'">{{ p.qty }}</span>
+            <span style="text-align:right;font:400 12px/1 'IBM Plex Mono';color:#6a6454">{{ p.rate }}</span>
+            <span style="text-align:right;font:600 12px/1 'IBM Plex Mono'">{{ p.total }}</span>
+          </div>
+        </sc-for>
+      </section>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ onAdmins }}" hint-placeholder-val="{{ false }}">
+  <div style="padding:26px 28px 40px;display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap">
+      <div>
+        <h1 style="margin:0;font:600 22px/1.2 'Anek Latin';display:var(--en)">Admins &amp; permissions</h1>
+        <div style="font:400 14px/1.4 'Anek Tamil';color:#6a6454;display:var(--ta)">நிர்வாகிகள் &amp; அனுமதிகள்</div>
+      </div>
+      <button style="border:0;background:var(--accent);color:#fff;border-radius:7px;padding:9px 14px;font:500 12px/1 'Anek Latin';cursor:pointer">Create admin</button>
+    </div>
+    <section style="background:#fff;border:1px solid #e7e0cd;border-radius:10px;overflow:auto">
+      <div style="min-width:760px">
+        <div style="display:grid;grid-template-columns:minmax(0,1.3fr) repeat(5,1fr);gap:10px;padding:10px 16px;background:#faf7ef;border-bottom:1px solid #efe9da;font:500 10px/1.3 'IBM Plex Mono';letter-spacing:.04em;color:#8c8570">
+          <span>ADMIN</span><span style="text-align:center">APPROVE<br/>REQUESTS</span><span style="text-align:center">CHANGE<br/>PRICES</span><span style="text-align:center">MANAGE<br/>VENDORS</span><span style="text-align:center">CREATE<br/>DISPATCH</span><span style="text-align:center">RESOLVE<br/>ISSUES</span>
+        </div>
+        <sc-for list="{{ admins }}" as="a" hint-placeholder-count="4">
+          <div style="display:grid;grid-template-columns:minmax(0,1.3fr) repeat(5,1fr);gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid #f7f3e9">
+            <span style="display:flex;align-items:center;gap:10px;min-width:0">
+              <span style="width:28px;height:28px;border-radius:50%;background:{{ a.avBg }};color:#fff;font:600 11px/28px 'Anek Latin';text-align:center;flex:none">{{ a.initials }}</span>
+              <span style="min-width:0">
+                <span style="display:block;font:500 12px/1.3 'Anek Latin'">{{ a.name }}</span>
+                <span style="display:block;font:400 10px/1.3 'IBM Plex Mono';color:#8c8570">{{ a.role }}</span>
+              </span>
+            </span>
+            <sc-for list="{{ a.perms }}" as="p" hint-placeholder-count="5">
+              <span style="display:flex;justify-content:center">
+                <button onClick="{{ p.toggle }}" style="width:38px;height:22px;border-radius:12px;border:0;padding:2px;cursor:{{ p.cursor }};background:{{ p.track }};display:flex;justify-content:{{ p.justify }}">
+                  <span style="width:18px;height:18px;border-radius:50%;background:#fff;display:block"></span>
+                </button>
+              </span>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+    <div style="font:400 11px/1.5 'Anek Latin';color:#8c8570">Super Admin permissions are fixed and cannot be switched off. Every toggle writes to the activity log.</div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ onAudit }}" hint-placeholder-val="{{ false }}">
+  <div style="padding:26px 28px 40px;display:flex;flex-direction:column;gap:18px">
+    <div>
+      <h1 style="margin:0;font:600 22px/1.2 'Anek Latin';display:var(--en)">Activity log</h1>
+      <div style="font:400 14px/1.4 'Anek Tamil';color:#6a6454;display:var(--ta)">செயல் பதிவு</div>
+      <div style="margin-top:6px;font:400 11px/1.4 'IBM Plex Mono';color:#8c8570">Read-only · retained permanently</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <input placeholder="Filter by user, shop, or record id…" style="flex:1;min-width:220px;border:1px solid #e2dbc8;border-radius:7px;padding:9px 11px;font:400 12px/1 'Anek Latin';background:#fff" />
+      <sc-for list="{{ auditFilters }}" as="f" hint-placeholder-count="5">
+        <span style="font:500 11px/1 'Anek Latin';padding:9px 11px;border-radius:20px;background:{{ f.bg }};color:{{ f.fg }};cursor:pointer">{{ f.label }}</span>
+      </sc-for>
+    </div>
+    <section style="background:#fff;border:1px solid #e7e0cd;border-radius:10px;overflow:hidden">
+      <sc-for list="{{ audit }}" as="a" hint-placeholder-count="8">
+        <div style="display:grid;grid-template-columns:118px 92px minmax(0,1fr) 96px;gap:12px;align-items:baseline;padding:11px 16px;border-bottom:1px solid #f7f3e9">
+          <span style="font:400 11px/1.4 'IBM Plex Mono';color:#a39c86">{{ a.ts }}</span>
+          <span style="font:600 9px/1 'IBM Plex Mono';padding:5px 6px;border-radius:5px;text-align:center;background:{{ a.kBg }};color:{{ a.kFg }}">{{ a.kind }}</span>
+          <span style="font:400 12px/1.5 'Anek Latin';min-width:0">{{ a.text }}</span>
+          <span style="font:400 11px/1.4 'Anek Latin';color:#6a6454;text-align:right">{{ a.by }}</span>
+        </div>
+      </sc-for>
+    </section>
+  </div>
+  </sc-if>
+
+  </main>
+</div>
+</sc-if>
+
+<sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;background:#ebe5d5;padding:28px 28px 60px">
+  <div style="max-width:1400px;margin:0 auto">
+    <div style="margin-bottom:6px;font:600 20px/1.2 'Anek Latin'">Shop app — Tamil first, English second</div>
+    <div style="font:400 13px/1.5 'Anek Latin';color:#6a6454;max-width:640px">Built for a ₹6,000 phone in a busy shop: one job per screen, 56px tap targets, numbers in monospace at 22px+, and sync state visible on every screen. Tap through the receive flow on the first phone.</div>
+
+    <div style="margin-top:26px;display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start">
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font:600 12px/1.3 'Anek Latin'">Receive delivery <span style="font:400 11px/1 'IBM Plex Mono';color:#8c8570">· interactive</span></div>
+        <x-import component-from-global-scope="AndroidDevice" from="./android-frame.jsx" hint-size="412px,892px">
+          <div style="height:100%;display:flex;flex-direction:column;background:#f9f6ee;font-family:'Anek Latin'">
+            <div style="background:#173a2a;color:#fff;padding:14px 16px;display:flex;align-items:center;gap:12px">
+              <button onClick="{{ recvBack }}" style="border:0;background:#ffffff1f;color:#fff;width:40px;height:40px;border-radius:10px;font:600 18px/1 'Anek Latin';cursor:pointer">←</button>
+              <div style="min-width:0">
+                <div style="font:600 17px/1.3 'Anek Tamil'">பொருள் பெறுதல்</div>
+                <div style="font:400 12px/1.3 'Anek Latin';color:#b9bcb0">Receive delivery · {{ recvStepLabel }}</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:4px;padding:10px 16px;background:#fff;border-bottom:1px solid #e9e2d1">
+              <sc-for list="{{ recvSteps }}" as="s" hint-placeholder-count="4">
+                <span style="flex:1;height:6px;border-radius:3px;background:{{ s.bg }}"></span>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ recv0 }}" hint-placeholder-val="{{ true }}">
+              <div style="flex:1;padding:20px 16px;display:flex;flex-direction:column;gap:16px">
+                <div style="border-radius:14px;background:#fff;border:1px solid #e7e0cd;padding:18px;text-align:center">
+                  <div style="font:600 19px/1.4 'Anek Tamil'">வாகனத்தில் உள்ள QR-ஐ ஸ்கேன் செய்யவும்</div>
+                  <div style="font:400 13px/1.4 'Anek Latin';color:#6a6454">Scan the QR on the delivery slip</div>
+                  <div style="margin:16px auto 0;width:180px;height:180px;border-radius:14px;background:repeating-linear-gradient(135deg,#efe9da 0 9px,#f7f6ef 9px 18px);border:2px dashed #d8cfb8;display:flex;align-items:center;justify-content:center;font:400 11px/1.4 'IBM Plex Mono';color:#8c8570">camera preview</div>
+                </div>
+                <div style="text-align:center;font:400 13px/1 'Anek Latin';color:#8c8570">— or —</div>
+                <div style="background:#fff;border:1px solid #e7e0cd;border-radius:14px;padding:16px">
+                  <div style="font:600 16px/1.4 'Anek Tamil'">குறியீட்டை உள்ளிடவும்</div>
+                  <div style="font:400 12px/1.3 'Anek Latin';color:#6a6454">Enter the 6-digit code</div>
+                  <div style="margin-top:12px;display:flex;gap:8px">
+                    <sc-for list="{{ codeDigits }}" as="d" hint-placeholder-count="6">
+                      <span style="flex:1;height:56px;border:1.5px solid #e2dbc8;border-radius:10px;background:#fcfaf4;display:flex;align-items:center;justify-content:center;font:600 22px/1 'IBM Plex Mono'">{{ d.v }}</span>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ recv1 }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;overflow:auto">
+                <div style="padding:14px 16px;background:#e5efe8;border-bottom:1px solid #cfe0d5">
+                  <div style="font:600 15px/1.3 'Anek Latin'">DSP-2291 · Head Office</div>
+                  <div style="font:400 12px/1.4 'Anek Tamil';color:#1f5a3d">உண்மையில் பெற்ற எடையை உள்ளிடவும்</div>
+                </div>
+                <sc-for list="{{ recvLines }}" as="l" hint-placeholder-count="5">
+                  <div style="padding:14px 16px;border-bottom:1px solid #efe9da;background:{{ l.bg }}">
+                    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+                      <div style="min-width:0">
+                        <div style="font:600 17px/1.3 'Anek Tamil'">{{ l.ta }}</div>
+                        <div style="font:400 12px/1.3 'Anek Latin';color:#6a6454">{{ l.en }}</div>
+                      </div>
+                      <div style="text-align:right;flex:none">
+                        <div style="font:400 11px/1.3 'IBM Plex Mono';color:#8c8570">sent</div>
+                        <div style="font:600 16px/1.2 'IBM Plex Mono'">{{ l.sent }}</div>
+                      </div>
+                    </div>
+                    <div style="margin-top:10px;display:flex;align-items:center;gap:10px">
+                      <button onClick="{{ l.minus }}" style="width:56px;height:56px;border-radius:12px;border:1.5px solid #e2dbc8;background:#fff;font:600 24px/1 'Anek Latin';cursor:pointer">−</button>
+                      <div style="flex:1;height:56px;border:1.5px solid {{ l.inputBd }};border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;gap:6px">
+                        <span style="font:600 24px/1 'IBM Plex Mono'">{{ l.got }}</span>
+                        <span style="font:400 14px/1 'Anek Tamil';color:#8c8570">கிலோ</span>
+                      </div>
+                      <button onClick="{{ l.plus }}" style="width:56px;height:56px;border-radius:12px;border:1.5px solid #e2dbc8;background:#fff;font:600 24px/1 'Anek Latin';cursor:pointer">+</button>
+                    </div>
+                    <sc-if value="{{ l.short }}" hint-placeholder-val="{{ false }}">
+                      <div style="margin-top:9px;display:flex;align-items:center;gap:8px;background:#fae9e7;border-radius:10px;padding:9px 11px">
+                        <span style="width:9px;height:9px;border-radius:50%;background:#9b2335;flex:none"></span>
+                        <span style="font:600 14px/1.35 'Anek Tamil';color:#85192b">{{ l.shortTa }}</span>
+                        <span style="margin-left:auto;font:600 14px/1 'IBM Plex Mono';color:#85192b">{{ l.diff }}</span>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ recv2 }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;padding:20px 16px;display:flex;flex-direction:column;gap:14px">
+                <div>
+                  <div style="font:600 19px/1.4 'Anek Tamil'">பொருட்களை படம் எடுக்கவும்</div>
+                  <div style="font:400 13px/1.4 'Anek Latin';color:#6a6454">Take one photo of the goods as delivered</div>
+                </div>
+                <div style="flex:1;border-radius:14px;background:repeating-linear-gradient(135deg,#e2dbc8 0 10px,#ece6d7 10px 20px);border:1px solid #d8cfb8;display:flex;align-items:center;justify-content:center;font:400 12px/1.4 'IBM Plex Mono';color:#7d8175">camera</div>
+                <button style="height:64px;border-radius:14px;border:0;background:#173a2a;color:#fff;font:600 18px/1 'Anek Tamil';cursor:pointer">புகைப்படம் எடு</button>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ recv3 }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;overflow:auto;padding:16px">
+                <div style="background:#fae9e7;border:1px solid #ecc9ce;border-radius:14px;padding:14px">
+                  <div style="font:600 18px/1.35 'Anek Tamil';color:#85192b">2 பொருட்களில் வித்தியாசம்</div>
+                  <div style="font:400 12px/1.4 'Anek Latin';color:#85192b">2 items don't match. Head Office will be told automatically.</div>
+                </div>
+                <div style="margin-top:14px;background:#fff;border:1px solid #e7e0cd;border-radius:14px;overflow:hidden">
+                  <sc-for list="{{ recvSummary }}" as="s" hint-placeholder-count="5">
+                    <div style="display:flex;align-items:center;gap:10px;padding:13px 14px;border-bottom:1px solid #f3efe4;background:{{ s.bg }}">
+                      <span style="min-width:0;flex:1">
+                        <span style="display:block;font:600 15px/1.3 'Anek Tamil'">{{ s.ta }}</span>
+                        <span style="display:block;font:400 11px/1.3 'Anek Latin';color:#8c8570">{{ s.en }}</span>
+                      </span>
+                      <span style="font:400 13px/1 'IBM Plex Mono';color:#8c8570">{{ s.sent }}</span>
+                      <span style="font:400 13px/1 'IBM Plex Mono';color:#8c8570">→</span>
+                      <span style="font:600 16px/1 'IBM Plex Mono';color:{{ s.fg }}">{{ s.got }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="margin-top:14px;display:flex;gap:10px;align-items:center;background:#fff;border:1px solid #e7e0cd;border-radius:14px;padding:12px">
+                  <div style="width:56px;height:56px;border-radius:10px;background:repeating-linear-gradient(135deg,#e2dbc8 0 8px,#ece6d7 8px 16px)"></div>
+                  <div style="font:400 12px/1.4 'Anek Latin';color:#6a6454">Photo attached<span style="display:block;font:400 12px/1.4 'Anek Tamil'">புகைப்படம் இணைக்கப்பட்டது</span></div>
+                </div>
+              </div>
+            </sc-if>
+
+            <div style="padding:12px 16px 16px;background:#fff;border-top:1px solid #e9e2d1">
+              <button onClick="{{ recvNext }}" style="width:100%;height:64px;border-radius:14px;border:0;background:{{ recvCtaBg }};color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+                <span style="font:600 19px/1.2 'Anek Tamil'">{{ recvCtaTa }}</span>
+                <span style="font:400 12px/1.2 'Anek Latin';opacity:.85">{{ recvCtaEn }}</span>
+              </button>
+            </div>
+          </div>
+        </x-import>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font:600 12px/1.3 'Anek Latin'">Home — online</div>
+        <x-import component-from-global-scope="AndroidDevice" from="./android-frame.jsx" hint-size="412px,892px">
+          <div style="height:100%;display:flex;flex-direction:column;background:#f9f6ee;font-family:'Anek Latin'">
+            <div style="background:#173a2a;color:#fff;padding:16px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="min-width:0;flex:1">
+                  <div style="font:600 18px/1.3 'Anek Tamil'">அண்ணா நகர் கடை</div>
+                  <div style="font:400 12px/1.3 'IBM Plex Mono';color:#b9bcb0">S-142 · Anna Nagar</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:7px;background:#28563f;border-radius:20px;padding:8px 12px">
+                  <span style="width:9px;height:9px;border-radius:50%;background:#7fd2a4"></span>
+                  <span style="font:600 12px/1 'Anek Latin';color:#bfe9d1">Synced</span>
+                </div>
+              </div>
+            </div>
+            <div style="flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:14px">
+              <div style="background:#fff;border:1px solid #e7e0cd;border-radius:14px;padding:16px">
+                <div style="font:600 16px/1.3 'Anek Tamil'">என் இருப்பு</div>
+                <div style="font:400 12px/1.3 'Anek Latin';color:#8c8570">My stock · 12 items</div>
+                <div style="margin-top:10px;font:600 34px/1 'IBM Plex Mono'">1,842<span style="font:400 15px/1 'Anek Tamil';color:#8c8570;margin-left:6px">கிலோ</span></div>
+                <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+                  <sc-for list="{{ homeChips }}" as="c" hint-placeholder-count="3">
+                    <span style="border-radius:9px;padding:8px 10px;background:{{ c.bg }};font:500 13px/1.2 'Anek Tamil';color:{{ c.fg }}">{{ c.ta }} <span style="font-family:'IBM Plex Mono';font-weight:600">{{ c.kg }}</span></span>
+                  </sc-for>
+                </div>
+              </div>
+              <button style="text-align:left;background:#e5efe8;border:1px solid #cfe0d5;border-radius:14px;padding:16px;cursor:pointer">
+                <div style="display:flex;align-items:center;gap:12px">
+                  <span style="width:44px;height:44px;border-radius:12px;background:#1f5a3d;color:#fff;font:600 18px/44px 'IBM Plex Mono';text-align:center;flex:none">2</span>
+                  <span style="min-width:0">
+                    <span style="display:block;font:600 17px/1.3 'Anek Tamil';color:#173a2a">வரவிருக்கும் டெலிவரி</span>
+                    <span style="display:block;font:400 12px/1.3 'Anek Latin';color:#1f5a3d">Deliveries waiting to be received</span>
+                  </span>
+                </div>
+              </button>
+              <button style="text-align:left;background:#fae9e7;border:1px solid #ecc9ce;border-radius:14px;padding:16px;cursor:pointer">
+                <div style="display:flex;align-items:center;gap:12px">
+                  <span style="width:44px;height:44px;border-radius:12px;background:#9b2335;color:#fff;font:600 18px/44px 'IBM Plex Mono';text-align:center;flex:none">1</span>
+                  <span style="min-width:0">
+                    <span style="display:block;font:600 17px/1.3 'Anek Tamil';color:#8d2f28">திறந்த பிரச்சினை</span>
+                    <span style="display:block;font:400 12px/1.3 'Anek Latin';color:#85192b">Sugar shortfall 10 kg · waiting on HO</span>
+                  </span>
+                </div>
+              </button>
+              <div style="margin-top:2px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <button style="height:104px;border-radius:14px;border:1.5px solid #e2dbc8;background:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
+                  <span style="font:600 16px/1.3 'Anek Tamil'">கோரிக்கை</span>
+                  <span style="font:400 11px/1.2 'Anek Latin';color:#8c8570">Request stock</span>
+                </button>
+                <button style="height:104px;border-radius:14px;border:1.5px solid #e2dbc8;background:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px">
+                  <span style="font:600 16px/1.3 'Anek Tamil'">பிரச்சினை</span>
+                  <span style="font:400 11px/1.2 'Anek Latin';color:#8c8570">Report a problem</span>
+                </button>
+              </div>
+            </div>
+            <div style="padding:12px 16px 16px;background:#fff;border-top:1px solid #e9e2d1">
+              <button style="width:100%;height:64px;border-radius:14px;border:0;background:#9a6a12;color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+                <span style="font:600 19px/1.2 'Anek Tamil'">நாள் இறுதி கணக்கு</span>
+                <span style="font:400 12px/1.2 'Anek Latin';opacity:.9">Daily closing · due by 21:00</span>
+              </button>
+            </div>
+          </div>
+        </x-import>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font:600 12px/1.3 'Anek Latin'">Home — offline, queued</div>
+        <x-import component-from-global-scope="AndroidDevice" from="./android-frame.jsx" hint-size="412px,892px">
+          <div style="height:100%;display:flex;flex-direction:column;background:#f9f6ee;font-family:'Anek Latin'">
+            <div style="background:#5c4a1e;color:#fff;padding:16px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="min-width:0;flex:1">
+                  <div style="font:600 18px/1.3 'Anek Tamil'">அண்ணா நகர் கடை</div>
+                  <div style="font:400 12px/1.3 'IBM Plex Mono';color:#e0d3b4">S-142 · Anna Nagar</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:7px;background:#87692a;border-radius:20px;padding:8px 12px">
+                  <span style="width:9px;height:9px;border-radius:50%;background:#f0c463;animation:blip 1.6s infinite"></span>
+                  <span style="font:600 12px/1 'Anek Latin';color:#f7e6bd">Offline</span>
+                </div>
+              </div>
+            </div>
+            <div style="background:#fdf3ea;border-bottom:1px solid #f0dcc2;padding:14px 16px">
+              <div style="font:600 16px/1.35 'Anek Tamil';color:#8a4a12">இணைப்பு இல்லை — 3 பதிவுகள் காத்திருக்கின்றன</div>
+              <div style="font:400 12px/1.4 'Anek Latin';color:#8a4a12">No connection. 3 entries saved on this phone, they will send by themselves.</div>
+            </div>
+            <div style="flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:12px">
+              <sc-for list="{{ queued }}" as="q" hint-placeholder-count="3">
+                <div style="background:#fff;border:1px solid #e7e0cd;border-radius:14px;padding:14px;display:flex;gap:12px;align-items:center">
+                  <span style="width:40px;height:40px;border-radius:50%;border:2.5px dashed #d0a95c;flex:none"></span>
+                  <span style="min-width:0;flex:1">
+                    <span style="display:block;font:600 16px/1.3 'Anek Tamil'">{{ q.ta }}</span>
+                    <span style="display:block;font:400 12px/1.3 'Anek Latin';color:#8c8570">{{ q.en }}</span>
+                  </span>
+                  <span style="font:500 11px/1 'IBM Plex Mono';color:#9a6a12">{{ q.when }}</span>
+                </div>
+              </sc-for>
+              <div style="font:400 12px/1.5 'Anek Latin';color:#8c8570;padding:0 2px">Everything on this screen still works offline. Only prices and new dispatches need a connection.</div>
+            </div>
+            <div style="padding:12px 16px 16px;background:#fff;border-top:1px solid #e9e2d1">
+              <button style="width:100%;height:64px;border-radius:14px;border:1.5px solid #e2dbc8;background:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+                <span style="font:600 18px/1.2 'Anek Tamil'">இப்போது முயற்சி செய்</span>
+                <span style="font:400 12px/1.2 'Anek Latin';color:#8c8570">Try to sync now</span>
+              </button>
+            </div>
+          </div>
+        </x-import>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font:600 12px/1.3 'Anek Latin'">Daily closing — stock, then money</div>
+        <x-import component-from-global-scope="AndroidDevice" from="./android-frame.jsx" hint-size="412px,892px">
+          <div style="height:100%;display:flex;flex-direction:column;background:#f9f6ee;font-family:'Anek Latin'">
+            <div style="background:#173a2a;color:#fff;padding:14px 16px">
+              <div style="font:600 17px/1.3 'Anek Tamil'">நாள் இறுதி கணக்கு</div>
+              <div style="font:400 12px/1.3 'Anek Latin';color:#b9bcb0">Daily closing · 21 Sep · step 1 of 3</div>
+            </div>
+            <div style="flex:1;overflow:auto">
+              <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #efe9da;font:500 13px/1.4 'Anek Latin';color:#6a6454">Count what is left and type it in.<span style="display:block;font:600 15px/1.4 'Anek Tamil';color:#173a2a">மீதமுள்ள எடையை உள்ளிடவும்</span></div>
+              <sc-for list="{{ closingLines }}" as="c" hint-placeholder-count="5">
+                <div style="padding:13px 16px;border-bottom:1px solid #efe9da;display:flex;align-items:center;gap:12px;background:#fff">
+                  <span style="min-width:0;flex:1">
+                    <span style="display:block;font:600 16px/1.3 'Anek Tamil'">{{ c.ta }}</span>
+                    <span style="display:block;font:400 11px/1.3 'Anek Latin';color:#8c8570">{{ c.en }} · opened {{ c.open }} kg</span>
+                  </span>
+                  <span style="width:112px;height:56px;border:1.5px solid {{ c.bd }};border-radius:12px;background:{{ c.bg }};display:flex;align-items:center;justify-content:center;gap:5px;flex:none">
+                    <span style="font:600 22px/1 'IBM Plex Mono'">{{ c.left }}</span>
+                    <span style="font:400 13px/1 'IBM Plex Mono';color:#8c8570">kg</span>
+                  </span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="padding:12px 16px 16px;background:#fff;border-top:1px solid #e9e2d1">
+              <button style="width:100%;height:64px;border-radius:14px;border:0;background:#173a2a;color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+                <span style="font:600 19px/1.2 'Anek Tamil'">அடுத்து — பணம்</span>
+                <span style="font:400 12px/1.2 'Anek Latin';opacity:.85">Next — cash &amp; UPI</span>
+              </button>
+            </div>
+          </div>
+        </x-import>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font:600 12px/1.3 'Anek Latin'">Daily closing — review with a gap</div>
+        <x-import component-from-global-scope="AndroidDevice" from="./android-frame.jsx" hint-size="412px,892px">
+          <div style="height:100%;display:flex;flex-direction:column;background:#f9f6ee;font-family:'Anek Latin'">
+            <div style="background:#173a2a;color:#fff;padding:14px 16px">
+              <div style="font:600 17px/1.3 'Anek Tamil'">சரிபார்த்து சமர்ப்பிக்கவும்</div>
+              <div style="font:400 12px/1.3 'Anek Latin';color:#b9bcb0">Review &amp; submit · step 3 of 3</div>
+            </div>
+            <div style="flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:14px">
+              <div style="background:#fff;border:1px solid #e7e0cd;border-radius:14px;overflow:hidden">
+                <sc-for list="{{ reviewRows }}" as="r" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:14px 16px;border-bottom:1px solid #f3efe4">
+                    <span style="min-width:0">
+                      <span style="display:block;font:600 15px/1.3 'Anek Tamil'">{{ r.ta }}</span>
+                      <span style="display:block;font:400 11px/1.3 'Anek Latin';color:#8c8570">{{ r.en }}</span>
+                    </span>
+                    <span style="font:600 20px/1 'IBM Plex Mono';color:{{ r.fg }};flex:none">{{ r.val }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="background:#fae9e7;border:1px solid #ecc9ce;border-radius:14px;padding:16px">
+                <div style="font:600 18px/1.35 'Anek Tamil';color:#8d2f28">₹1,240 குறைவாக உள்ளது</div>
+                <div style="font:400 12px/1.45 'Anek Latin';color:#85192b">Money is ₹1,240 short of what today's sales should have brought in. Submitting will open an issue for Head Office.</div>
+                <textarea placeholder="காரணம் (விருப்பம்) · reason, optional" style="margin-top:12px;width:100%;height:64px;border:1px solid #e8d4d0;border-radius:10px;background:#fff;padding:10px;font:400 14px/1.4 'Anek Tamil';resize:none"></textarea>
+              </div>
+              <div style="font:400 12px/1.5 'Anek Latin';color:#8c8570">Once you submit, today is locked. Changes need Head Office.<span style="display:block;font:400 13px/1.5 'Anek Tamil';color:#6a6454">சமர்ப்பித்த பிறகு மாற்ற முடியாது.</span></div>
+            </div>
+            <div style="padding:12px 16px 16px;background:#fff;border-top:1px solid #e9e2d1;display:flex;gap:10px">
+              <button style="width:96px;height:64px;border-radius:14px;border:1.5px solid #e2dbc8;background:#fff;font:600 16px/1 'Anek Tamil';cursor:pointer">திரும்ப</button>
+              <button style="flex:1;height:64px;border-radius:14px;border:0;background:#85192b;color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+                <span style="font:600 19px/1.2 'Anek Tamil'">சமர்ப்பி &amp; பூட்டு</span>
+                <span style="font:400 12px/1.2 'Anek Latin';opacity:.9">Submit &amp; lock the day</span>
+              </button>
+            </div>
+          </div>
+        </x-import>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font:600 12px/1.3 'Anek Latin'">Login &amp; OTP</div>
+        <x-import component-from-global-scope="AndroidDevice" from="./android-frame.jsx" hint-size="412px,892px">
+          <div style="height:100%;display:flex;flex-direction:column;background:#f9f6ee;font-family:'Anek Latin';padding:28px 20px 20px">
+            <div style="font:600 24px/1.3 'Anek Tamil'">உள்நுழைக</div>
+            <div style="font:400 13px/1.4 'Anek Latin';color:#6a6454">Sign in to your shop account</div>
+            <div style="margin-top:26px;display:flex;flex-direction:column;gap:16px">
+              <label>
+                <span style="display:block;font:600 15px/1.3 'Anek Tamil'">பயனர் பெயர்</span>
+                <span style="display:block;font:400 11px/1.3 'Anek Latin';color:#8c8570;margin-bottom:6px">Username</span>
+                <input value="S142-anna" style="width:100%;height:60px;border:1.5px solid #e2dbc8;border-radius:12px;background:#fff;padding:0 14px;font:500 18px/1 'IBM Plex Mono'" />
+              </label>
+              <label>
+                <span style="display:block;font:600 15px/1.3 'Anek Tamil'">கடவுச்சொல்</span>
+                <span style="display:block;font:400 11px/1.3 'Anek Latin';color:#8c8570;margin-bottom:6px">Password</span>
+                <input value="••••••••" style="width:100%;height:60px;border:1.5px solid #e2dbc8;border-radius:12px;background:#fff;padding:0 14px;font:500 18px/1 'IBM Plex Mono'" />
+              </label>
+              <button style="height:64px;border-radius:14px;border:0;background:#173a2a;color:#fff;font:600 19px/1 'Anek Tamil';cursor:pointer">தொடரவும்</button>
+            </div>
+            <div style="margin-top:28px;padding-top:22px;border-top:1px dashed #ddd5c1">
+              <div style="font:600 17px/1.3 'Anek Tamil'">ஒருமுறை கடவுக்குறியீடு</div>
+              <div style="font:400 12px/1.4 'Anek Latin';color:#6a6454">Sent to 9x xxxx 4417</div>
+              <div style="margin-top:14px;display:flex;gap:9px">
+                <sc-for list="{{ otpDigits }}" as="d" hint-placeholder-count="6">
+                  <span style="flex:1;height:62px;border:1.5px solid {{ d.bd }};border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;font:600 24px/1 'IBM Plex Mono'">{{ d.v }}</span>
+                </sc-for>
+              </div>
+              <div style="margin-top:14px;font:400 13px/1.4 'Anek Latin';color:#8c8570">Resend in 0:24<span style="display:block;font:400 13px/1.4 'Anek Tamil'">0:24 நொடியில் மீண்டும் அனுப்பலாம்</span></div>
+            </div>
+          </div>
+        </x-import>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font:600 12px/1.3 'Anek Latin'">Raise a request</div>
+        <x-import component-from-global-scope="AndroidDevice" from="./android-frame.jsx" hint-size="412px,892px">
+          <div style="height:100%;display:flex;flex-direction:column;background:#f9f6ee;font-family:'Anek Latin'">
+            <div style="background:#173a2a;color:#fff;padding:14px 16px">
+              <div style="font:600 17px/1.3 'Anek Tamil'">இருப்பு கோரிக்கை</div>
+              <div style="font:400 12px/1.3 'Anek Latin';color:#b9bcb0">Ask Head Office for stock</div>
+            </div>
+            <div style="flex:1;overflow:auto">
+              <sc-for list="{{ requestPicker }}" as="p" hint-placeholder-count="6">
+                <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #efe9da;background:{{ p.bg }}">
+                  <span style="width:26px;height:26px;border-radius:7px;border:2px solid {{ p.boxBd }};background:{{ p.boxBg }};flex:none;color:#fff;font:600 15px/22px 'Anek Latin';text-align:center">{{ p.tick }}</span>
+                  <span style="min-width:0;flex:1">
+                    <span style="display:block;font:600 16px/1.3 'Anek Tamil'">{{ p.ta }}</span>
+                    <span style="display:block;font:400 11px/1.3 'Anek Latin';color:#8c8570">{{ p.en }} · have {{ p.have }} kg</span>
+                  </span>
+                  <sc-if value="{{ p.picked }}" hint-placeholder-val="{{ false }}">
+                    <span style="width:96px;height:52px;border:1.5px solid #1f5a3d;border-radius:11px;background:#fff;display:flex;align-items:center;justify-content:center;gap:4px;flex:none">
+                      <span style="font:600 20px/1 'IBM Plex Mono';color:#173a2a">{{ p.qty }}</span>
+                      <span style="font:400 12px/1 'IBM Plex Mono';color:#8c8570">kg</span>
+                    </span>
+                  </sc-if>
+                </div>
+              </sc-for>
+              <div style="padding:16px">
+                <div style="font:600 15px/1.3 'Anek Tamil'">காரணம்</div>
+                <div style="font:400 11px/1.3 'Anek Latin';color:#8c8570">Reason</div>
+                <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+                  <span style="border-radius:10px;padding:11px 12px;background:#e5efe8;color:#173a2a;font:600 14px/1.2 'Anek Tamil'">விரைவில் தீர்ந்துவிடும்</span>
+                  <span style="border-radius:10px;padding:11px 12px;background:#fff;border:1.5px solid #e2dbc8;font:600 14px/1.2 'Anek Tamil'">திருவிழா கூட்டம்</span>
+                  <span style="border-radius:10px;padding:11px 12px;background:#fff;border:1.5px solid #e2dbc8;font:600 14px/1.2 'Anek Tamil'">வேறு காரணம்</span>
+                </div>
+              </div>
+            </div>
+            <div style="padding:12px 16px 16px;background:#fff;border-top:1px solid #e9e2d1">
+              <button style="width:100%;height:64px;border-radius:14px;border:0;background:#1f5a3d;color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+                <span style="font:600 19px/1.2 'Anek Tamil'">கோரிக்கை அனுப்பு</span>
+                <span style="font:400 12px/1.2 'Anek Latin';opacity:.85">Send request · 2 items</span>
+              </button>
+            </div>
+          </div>
+        </x-import>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font:600 12px/1.3 'Anek Latin'">Supervisor — small shops &amp; ordered transfer</div>
+        <x-import component-from-global-scope="AndroidDevice" from="./android-frame.jsx" hint-size="412px,892px">
+          <div style="height:100%;display:flex;flex-direction:column;background:#f9f6ee;font-family:'Anek Latin'">
+            <div style="background:#3d2b46;color:#fff;padding:14px 16px">
+              <div style="font:600 17px/1.3 'Anek Tamil'">மேற்பார்வை — சேலம்</div>
+              <div style="font:400 12px/1.3 'IBM Plex Mono';color:#cdbdd6">SUP-07 · 38 small shops</div>
+            </div>
+            <div style="background:#f6eaf1;border-bottom:1px solid #e6d2e0;padding:14px 16px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font:600 9px/1 'IBM Plex Mono';background:#8d3f6e;color:#fff;padding:5px 7px;border-radius:5px">HO ORDER</span>
+                <span style="font:400 11px/1 'IBM Plex Mono';color:#8d3f6e">TRF-0412 · today</span>
+              </div>
+              <div style="margin-top:8px;font:600 17px/1.35 'Anek Tamil';color:#5d2748">S-198 கடைக்கு 120 கிலோ அரிசி அனுப்பவும்</div>
+              <div style="font:400 12px/1.4 'Anek Latin';color:#8d3f6e">Send 120 kg rice to S-198 Kumarapalayam</div>
+              <div style="margin-top:12px;display:flex;gap:10px">
+                <button style="flex:1;height:56px;border-radius:12px;border:0;background:#8d3f6e;color:#fff;font:600 16px/1 'Anek Tamil';cursor:pointer">அனுப்பினேன்</button>
+                <button style="width:120px;height:56px;border-radius:12px;border:1.5px solid #d9c3d2;background:#fff;color:#8d3f6e;font:600 15px/1 'Anek Tamil';cursor:pointer">பிரச்சினை</button>
+              </div>
+            </div>
+            <div style="flex:1;overflow:auto">
+              <div style="padding:14px 16px 8px;font:600 15px/1.3 'Anek Tamil'">என் கடைகளின் இருப்பு<span style="display:block;font:400 11px/1.3 'Anek Latin';color:#8c8570">Stock in my small shops · sales not visible</span></div>
+              <sc-for list="{{ supShops }}" as="s" hint-placeholder-count="6">
+                <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #efe9da;background:{{ s.bg }}">
+                  <span style="min-width:0;flex:1">
+                    <span style="display:block;font:600 15px/1.3 'Anek Tamil'">{{ s.ta }}</span>
+                    <span style="display:block;font:400 11px/1.3 'IBM Plex Mono';color:#8c8570">{{ s.code }}</span>
+                  </span>
+                  <span style="text-align:right;flex:none">
+                    <span style="display:block;font:600 18px/1 'IBM Plex Mono';color:{{ s.fg }}">{{ s.kg }}</span>
+                    <span style="display:block;font:400 10px/1.4 'IBM Plex Mono';color:{{ s.fg }}">{{ s.note }}</span>
+                  </span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </x-import>
+      </div>
+
+    </div>
+  </div>
+</div>
+</sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;language&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Bilingual&quot;,&quot;English only&quot;,&quot;Tamil only&quot;],&quot;default&quot;:&quot;Bilingual&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Localisation&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Comfortable&quot;,&quot;Compact&quot;],&quot;default&quot;:&quot;Comfortable&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Layout&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;options&quot;:[&quot;#1f5a3d&quot;,&quot;#3d6b85&quot;,&quot;#6b7a4f&quot;,&quot;#8d3f6e&quot;],&quot;default&quot;:&quot;#1f5a3d&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Layout&quot;}}">
+class Component extends DCLogic {
+  state = {
+    surface: 'web', screen: 'overview',
+    dispatch: 'DSP-2291', item: 'ITM-01', shop: 'S-142',
+    openSup: { 'SUP-07': true },
+    reqState: {}, issueState: {},
+    perms: { 'MA': [1,0,1,1,1], 'PV': [1,1,1,1,0], 'SN': [0,0,0,1,1] },
+    recvStep: 0, recvQty: { sugar: 150, rice: 200, toor: 70, oil: 40, salt: 100 }
+  };
+
+  componentDidMount() { this.applyVars(); }
+  componentDidUpdate() { this.applyVars(); }
+  applyVars() {
+    const r = document.documentElement.style;
+    const lang = this.props.language || 'Bilingual';
+    r.setProperty('--ta', lang === 'English only' ? 'none' : 'block');
+    r.setProperty('--en', lang === 'Tamil only' ? 'none' : 'block');
+    r.setProperty('--accent', this.props.accent || '#1f5a3d');
+    r.setProperty('--rowpad', (this.props.density || 'Comfortable') === 'Compact' ? '8px' : '13px');
+  }
+
+  go(screen) { return () => this.setState({ screen }); }
+  navStyle(name) {
+    const on = this.state.screen === name;
+    return 'width:100%;text-align:left;border:0;border-radius:8px;padding:9px 10px;cursor:pointer;font:500 13px/1.3 "Anek Latin";background:' +
+      (on ? '#fff' : 'transparent') + ';color:#173a2a;box-shadow:' + (on ? 'inset 3px 0 0 var(--accent)' : 'none');
+  }
+  tabStyle(on) {
+    return 'border:0;border-radius:6px;padding:7px 12px;cursor:pointer;font:500 12px/1 "Anek Latin";background:' +
+      (on ? '#f2f2ec' : 'transparent') + ';color:' + (on ? '#173a2a' : '#b9bcb0');
+  }
+
+  renderVals() {
+    const s = this.state;
+    const st = {
+      Created:   ['#eee9dc', '#6a6454'],
+      Dispatched:['#e5efe8', '#1f5a3d'],
+      Received:  ['#eaf0f4', '#3d6b85'],
+      Matched:   ['#e6f0ea', '#2f6b4d'],
+      Discrepancy:['#fae9e7','#85192b'],
+      Resolved:  ['#f6eaf1', '#8d3f6e']
+    };
+
+    const dispatchData = [
+      { id:'DSP-2291', type:'DISPATCH', to:'S-142 Anna Nagar', toTa:'அண்ணா நகர் கடை', kg:'560', lines:5, status:'Discrepancy', when:'17:12' },
+      { id:'TRF-0412', type:'TRANSFER', to:'S-198 Kumarapalayam', toTa:'குமாரபாளையம் கடை', kg:'120', lines:1, status:'Dispatched', when:'16:40' },
+      { id:'DSP-2290', type:'DISPATCH', to:'SUP-07 Salem', toTa:'சேலம் மேற்பார்வை', kg:'2,400', lines:9, status:'Received', when:'14:05' },
+      { id:'DSP-2289', type:'DISPATCH', to:'S-076 Tambaram', toTa:'தாம்பரம் கடை', kg:'380', lines:4, status:'Matched', when:'11:22' },
+      { id:'DSP-2288', type:'DISPATCH', to:'SUP-03 Madurai', toTa:'மதுரை மேற்பார்வை', kg:'3,150', lines:12, status:'Matched', when:'09:48' },
+      { id:'DSP-2287', type:'DISPATCH', to:'S-311 Erode', toTa:'ஈரோடு கடை', kg:'240', lines:3, status:'Resolved', when:'Yesterday' },
+      { id:'DSP-2286', type:'DISPATCH', to:'S-045 Velachery', toTa:'வேளச்சேரி கடை', kg:'410', lines:6, status:'Created', when:'Yesterday' }
+    ];
+    const dispatches = dispatchData.map(d => {
+      const sel = d.id === s.dispatch;
+      const c = st[d.status];
+      return Object.assign({}, d, {
+        stBg: c[0], stFg: c[1],
+        bg: sel ? '#f8f5ed' : '#fff',
+        rail: sel ? 'inset 3px 0 0 var(--accent)' : 'none',
+        open: () => this.setState({ dispatch: d.id })
+      });
+    });
+
+    const detSrc = dispatchData.find(d => d.id === s.dispatch) || dispatchData[0];
+    const resolved = !!s.issueState['det-' + detSrc.id];
+    const detStatus = resolved && detSrc.status === 'Discrepancy' ? 'Resolved' : detSrc.status;
+    const lineSets = {
+      'DSP-2291': [
+        ['Sugar','சர்க்கரை',150,150,140,-10],
+        ['Rice','அரிசி',200,200,200,0],
+        ['Toor dal','துவரம் பருப்பு',80,70,70,-10],
+        ['Groundnut oil','கடலை எண்ணெய்',40,40,40,0],
+        ['Salt','உப்பு',100,100,100,0]
+      ]
+    };
+    const rawLines = lineSets[detSrc.id] || [
+      ['Rice','அரிசி',120,120,120,0],
+      ['Wheat','கோதுமை',60,60,60,0],
+      ['Jaggery','வெல்லம்',40,40,40,0]
+    ];
+    const det = {
+      id: detSrc.id, to: detSrc.to, toTa: detSrc.toTa, code: '4-8-2-9-1-6',
+      status: detStatus, stBg: st[detStatus][0], stFg: st[detStatus][1],
+      trail: [
+        { label:'Created', when:'21 Sep 09:10', dot:'#6a6454', fg:'#3e4239' },
+        { label:'Dispatched', when:'21 Sep 13:35', dot:'#1f5a3d', fg:'#3e4239' },
+        { label:'Received', when:'21 Sep 17:12', dot:'#3d6b85', fg:'#3e4239' },
+        { label: resolved ? 'Resolved' : 'Discrepancy', when: resolved ? '21 Sep 18:31' : 'awaiting HO', dot: resolved ? '#8d3f6e' : '#9b2335', fg: resolved ? '#8d3f6e' : '#85192b' }
+      ],
+      lines: rawLines.map(l => ({
+        en: l[0], ta: l[1], ordered: l[2], sent: l[3], received: l[4],
+        diff: l[5] === 0 ? '—' : (l[5] > 0 ? '+' + l[5] : String(l[5])),
+        diffFg: l[5] === 0 ? '#a39c86' : '#85192b',
+        bg: l[5] === 0 ? '#fff' : '#fdf6f5'
+      })),
+      issue: resolved ? 'Resolved — 20 kg written off against SUP transit loss' : 'Short by 20 kg across 2 items (sugar 10, toor dal 10)',
+      issueTa: resolved ? 'தீர்க்கப்பட்டது' : '2 பொருட்களில் 20 கிலோ குறைவு'
+    };
+
+    const dispFilters = [
+      ['All',48], ['Created',6], ['Dispatched',11], ['Received',9], ['Discrepancy',3], ['Matched',19]
+    ].map((f, i) => ({ label: f[0], n: f[1], bg: i === 0 ? '#173a2a' : '#f2f2ec', fg: i === 0 ? '#fff' : '#3e4239' }));
+
+    const attention = [
+      ['CASH GAP','S-142 Anna Nagar closing short','அண்ணா நகர் — பணம் குறைவு','−₹1,240','#fae9e7','#85192b','#85192b','issues'],
+      ['MISMATCH','DSP-2291 received 20 kg short','DSP-2291 — 20 கிலோ குறைவு','2 items','#fae9e7','#85192b','#85192b','dispatches'],
+      ['NO CLOSING','SUP-03 Madurai not submitted','மதுரை — கணக்கு வரவில்லை','18:40','#fdf3ea','#9a6a12','#9a6a12','shops'],
+      ['LOW STOCK','24 shops below 2-day cover','24 கடைகளில் இருப்பு குறைவு','24 shops','#fdf3ea','#9a6a12','#9a6a12','shops'],
+      ['REQUEST','12 requests waiting over 4 h','12 கோரிக்கைகள் நிலுவையில்','12','#f2f2ec','#3e4239','#3e4239','requests'],
+      ['OFFLINE','3 shops last synced yesterday','3 கடைகள் இணைப்பில் இல்லை','>20 h','#f2f2ec','#3e4239','#3e4239','shops']
+    ].map(a => ({ tag:a[0], title:a[1], titleTa:a[2], value:a[3], tagBg:a[4], tagFg:a[5], valFg:a[6], open:this.go(a[7]) }));
+
+    const pipeline = [
+      ['Created','உருவாக்கம்',6,'#f2f2ec','#3e4239'],
+      ['Dispatched','அனுப்பியது',11,'#e5efe8','#1f5a3d'],
+      ['Received','பெற்றது',9,'#eaf0f4','#3d6b85'],
+      ['Discrepancy','முரண்பாடு',3,'#fae9e7','#85192b'],
+      ['Matched','பொருந்தியது',19,'#e6f0ea','#2f6b4d']
+    ].map(p => ({ label:p[0], labelTa:p[1], n:p[2], bg:p[3], fg:p[4] }));
+
+    const lowStock = [
+      ['S-142 Anna Nagar','SUP-01 Chennai','Sugar','சர்க்கரை','8 kg'],
+      ['S-198 Kumarapalayam','SUP-07 Salem','Rice','அரிசி','14 kg'],
+      ['S-076 Tambaram','SUP-01 Chennai','Toor dal','துவரம் பருப்பு','5 kg'],
+      ['S-311 Erode','SUP-04 Erode','Groundnut oil','கடலை எண்ணெய்','6 kg']
+    ].map(l => ({ shop:l[0], sup:l[1], item:l[2], itemTa:l[3], kg:l[4] }));
+
+    const supData = [
+      ['SUP-01','SUP-01 Chennai','சென்னை மேற்பார்வை','9,420',41,'2 GAPS'],
+      ['SUP-03','SUP-03 Madurai','மதுரை மேற்பார்வை','7,180',38,'NO CLOSING'],
+      ['SUP-07','SUP-07 Salem','சேலம் மேற்பார்வை','6,905',38,'']
+    ];
+    const shopsBySup = {
+      'SUP-01': [['S-142','S-142 Anna Nagar','அண்ணா நகர்','1,842','GAP','#85192b'],['S-076','S-076 Tambaram','தாம்பரம்','640','LOW','#9a6a12'],['S-045','S-045 Velachery','வேளச்சேரி','1,120','OK','#2f6b4d']],
+      'SUP-03': [['S-220','S-220 Thirunagar','திருநகர்','980','OK','#2f6b4d'],['S-231','S-231 Usilampatti','உசிலம்பட்டி','410','LOW','#9a6a12']],
+      'SUP-07': [['S-198','S-198 Kumarapalayam','குமாரபாளையம்','520','LOW','#9a6a12'],['S-201','S-201 Attur','ஆத்தூர்','1,340','OK','#2f6b4d'],['S-209','S-209 Mettur','மேட்டூர்','860','OK','#2f6b4d']]
+    };
+    const supervisors = supData.map(sd => ({
+      name: sd[1], nameTa: sd[2], kg: sd[3], count: sd[4], flag: sd[5],
+      open: !!s.openSup[sd[0]], caret: s.openSup[sd[0]] ? '▾' : '▸',
+      toggle: () => this.setState(p => ({ openSup: Object.assign({}, p.openSup, { [sd[0]]: !p.openSup[sd[0]] }) })),
+      shops: (shopsBySup[sd[0]] || []).map(sh => ({
+        name: sh[1], nameTa: sh[2], kg: sh[3], st: sh[4], stFg: sh[5],
+        bg: s.shop === sh[0] ? '#f8f5ed' : '#fff',
+        select: () => this.setState({ shop: sh[0] })
+      }))
+    }));
+
+    const shopStock = [
+      ['Rice','அரிசி','620','78%','#1f5a3d',''],
+      ['Sugar','சர்க்கரை','8','4%','#9b2335','LOW'],
+      ['Toor dal','துவரம் பருப்பு','210','46%','#1f5a3d',''],
+      ['Wheat','கோதுமை','340','62%','#1f5a3d',''],
+      ['Groundnut oil','கடலை எண்ணெய்','96','31%','#9a6a12','WATCH'],
+      ['Salt','உப்பு','568','84%','#1f5a3d','']
+    ].map(i => ({ en:i[0], ta:i[1], kg:i[2], pct:i[3], barFg:i[4], flag:i[5], flagFg: i[5] === 'LOW' ? '#85192b' : '#9a6a12' }));
+
+    const reqData = [
+      ['REQ-1182','S-142 Anna Nagar','அண்ணா நகர் கடை','25 min ago','Sugar sold out by noon, festival week','8','35',[['Sugar','சர்க்கரை','150'],['Toor dal','துவரம் பருப்பு','80']]],
+      ['REQ-1181','S-198 Kumarapalayam','குமாரபாளையம் கடை','1 h ago','Rice will finish tomorrow morning','14','60',[['Rice','அரிசி','200']]],
+      ['REQ-1179','SUP-03 Madurai','மதுரை மேற்பார்வை','3 h ago','Restocking four small shops this week','7,180','820',[['Rice','அரிசி','1,200'],['Wheat','கோதுமை','600'],['Jaggery','வெல்லம்','150']]],
+      ['REQ-1176','S-311 Erode','ஈரோடு கடை','5 h ago','Oil cans damaged in transit, need replacement','6','18',[['Groundnut oil','கடலை எண்ணெய்','40']]]
+    ];
+    const requests = reqData.map(r => {
+      const v = s.reqState[r[0]];
+      const label = { approve:'APPROVED IN FULL', partial:'PARTIALLY APPROVED', reject:'REJECTED' }[v];
+      const cols = { approve:['#e6f0ea','#2f6b4d'], partial:['#fdf3ea','#9a6a12'], reject:['#fae9e7','#85192b'] }[v] || ['#f2f2ec','#3e4239'];
+      return {
+        id:r[0], shop:r[1], shopTa:r[2], when:r[3], reason:r[4], onHand:r[5], burn:r[6],
+        items: r[7].map(i => ({ en:i[0], ta:i[1], kg:i[2] })),
+        pending: !v, done: !!v, doneLabel: label, doneBg: cols[0], doneFg: cols[1],
+        rail: v === 'reject' ? 'inset 3px 0 0 #9b2335' : (v ? 'inset 3px 0 0 #3f7d5c' : 'none'),
+        approve: () => this.setReq(r[0], 'approve'),
+        partial: () => this.setReq(r[0], 'partial'),
+        reject: () => this.setReq(r[0], 'reject')
+      };
+    });
+
+    const issueData = [
+      ['ISS-0912','AUTO','Received 20 kg short on DSP-2291','DSP-2291 — 20 கிலோ குறைவு','S-142 Anna Nagar','17:14'],
+      ['ISS-0911','AUTO','Cash short by ₹1,240 at closing','ரொக்கம் ₹1,240 குறைவு','S-142 Anna Nagar','21:02'],
+      ['ISS-0910','SHOP','Weighing scale showing wrong reading','தராசு தவறாக காட்டுகிறது','S-076 Tambaram','15:40'],
+      ['ISS-0908','AUTO','No closing submitted for 2 days','2 நாட்களாக கணக்கு இல்லை','S-231 Usilampatti','Yesterday'],
+      ['ISS-0907','SHOP','Cannot send ordered transfer, vehicle broke down','வாகனம் பழுது — அனுப்ப முடியவில்லை','SUP-07 Salem','Yesterday']
+    ];
+    const issues = issueData.map(i => {
+      const closed = !!s.issueState[i[0]];
+      return {
+        title:i[2], titleTa:i[3], shop:i[4], when:i[5], src:i[1],
+        srcBg: i[1] === 'AUTO' ? '#fae9e7' : '#f2f2ec',
+        srcFg: i[1] === 'AUTO' ? '#85192b' : '#3e4239',
+        bg: closed ? '#faf9f4' : '#fff',
+        open: !closed, closed,
+        resolve: () => this.setState(p => ({ issueState: Object.assign({}, p.issueState, { [i[0]]: true }) }))
+      };
+    });
+
+    const itemData = [
+      ['ITM-01','Sugar','சர்க்கரை','44.00','18,420','12 Sep','ACTIVE'],
+      ['ITM-02','Rice','அரிசி','52.00','46,900','02 Aug','ACTIVE'],
+      ['ITM-03','Toor dal','துவரம் பருப்பு','128.00','9,140','12 Sep','ACTIVE'],
+      ['ITM-04','Urad dal','உளுந்து','142.00','4,610','30 Jul','ACTIVE'],
+      ['ITM-05','Wheat','கோதுமை','38.50','21,300','02 Aug','ACTIVE'],
+      ['ITM-06','Groundnut oil','கடலை எண்ணெய்','186.00','3,280','18 Sep','ACTIVE'],
+      ['ITM-07','Jaggery','வெல்லம்','62.00','5,740','21 Jun','ACTIVE'],
+      ['ITM-08','Tamarind','புளி','98.00','1,960','21 Jun','PAUSED']
+    ];
+    const items = itemData.map(i => ({
+      en:i[1], ta:i[2], price:i[3], kg:i[4], changed:i[5], st:i[6],
+      stFg: i[6] === 'ACTIVE' ? '#2f6b4d' : '#8c8570',
+      op: i[6] === 'ACTIVE' ? '1' : '.55',
+      bg: s.item === i[0] ? '#f8f5ed' : '#fff',
+      select: () => this.setState({ item: i[0] })
+    }));
+    const itSrc = itemData.find(i => i[0] === s.item) || itemData[0];
+    const item = { en: itSrc[1], ta: itSrc[2], price: itSrc[3] };
+    const priceHistory = [
+      ['12 Sep 26','44.00','+2.00','#85192b','R. Karthikeyan'],
+      ['28 Jun 26','42.00','−1.50','#2f6b4d','M. Anitha'],
+      ['14 Mar 26','43.50','+3.50','#85192b','R. Karthikeyan'],
+      ['05 Jan 26','40.00','opening','#a39c86','System']
+    ].map(p => ({ date:p[0], price:p[1], delta:p[2], dFg:p[3], by:p[4] }));
+
+    const vendors = [
+      ['Sri Lakshmi Traders','ஸ்ரீ லட்சுமி டிரேடர்ஸ்','Rice, wheat','₹18.4L'],
+      ['Kovai Pulses Co.','கோவை பருப்பு நிறுவனம்','Toor, urad, moong','₹9.2L'],
+      ['Annai Oil Mills','அன்னை எண்ணெய் ஆலை','Groundnut oil','₹6.8L'],
+      ['Thanjavur Jaggery Works','தஞ்சாவூர் வெல்லம்','Jaggery, tamarind','₹2.1L']
+    ].map(v => ({ name:v[0], nameTa:v[1], supplies:v[2], mtd:v[3] }));
+    const purchases = [
+      ['21 Sep','Rice','Sri Lakshmi Traders','12,000 kg','46.20','₹5.54L'],
+      ['20 Sep','Groundnut oil','Annai Oil Mills','1,500 kg','168.00','₹2.52L'],
+      ['18 Sep','Toor dal','Kovai Pulses Co.','3,000 kg','112.50','₹3.37L'],
+      ['16 Sep','Wheat','Sri Lakshmi Traders','8,000 kg','33.80','₹2.70L'],
+      ['14 Sep','Jaggery','Thanjavur Jaggery Works','2,200 kg','54.00','₹1.19L']
+    ].map(p => ({ date:p[0], item:p[1], vendor:p[2], qty:p[3], rate:p[4], total:p[5] }));
+
+    const adminData = [
+      ['RK','R. Karthikeyan','Super Admin','#1f5a3d', null],
+      ['MA','M. Anitha','Admin · Purchasing','#8d3f6e','MA'],
+      ['PV','P. Vignesh','Admin · Operations','#3d6b85','PV'],
+      ['SN','S. Nandhini','Admin · Support','#6b7a4f','SN']
+    ];
+    const admins = adminData.map(a => ({
+      initials:a[0], name:a[1], role:a[2], avBg:a[3],
+      perms: [0,1,2,3,4].map(idx => {
+        const fixed = a[4] === null;
+        const on = fixed ? true : !!(s.perms[a[4]] || [])[idx];
+        return {
+          track: on ? (fixed ? '#a39c86' : 'var(--accent)') : '#ddd5c1',
+          justify: on ? 'flex-end' : 'flex-start',
+          cursor: fixed ? 'not-allowed' : 'pointer',
+          toggle: fixed ? () => {} : () => this.setState(p => {
+            const row = (p.perms[a[4]] || []).slice();
+            row[idx] = row[idx] ? 0 : 1;
+            return { perms: Object.assign({}, p.perms, { [a[4]]: row }) };
+          })
+        };
+      })
+    }));
+
+    const auditFilters = ['Approvals','Prices','Dispatches','Permissions','Logins']
+      .map(l => ({ label:l, bg:'#fff', fg:'#3e4239' }));
+    const audit = [
+      ['18:31','RESOLVE','Resolved ISS-0912 — 20 kg written off against transit loss','R. Karthikeyan'],
+      ['18:04','APPROVE','Approved REQ-1181 partially — rice 200 kg → 120 kg','P. Vignesh'],
+      ['17:14','AUTO','Discrepancy raised on DSP-2291 (received 540 of 560 kg)','System'],
+      ['16:40','DISPATCH','Ordered transfer TRF-0412 · SUP-07 → S-198 · rice 120 kg','P. Vignesh'],
+      ['15:22','PERMS','Turned off "Change prices" for S. Nandhini','R. Karthikeyan'],
+      ['13:35','DISPATCH','DSP-2291 marked dispatched to S-142 Anna Nagar','M. Anitha'],
+      ['12:08','PRICE','Sugar price ₹42.00 → ₹44.00, effective next day open','R. Karthikeyan'],
+      ['09:15','PURCHASE','Recorded purchase · 12,000 kg rice from Sri Lakshmi Traders','M. Anitha']
+    ].map(a => {
+      const cols = { RESOLVE:['#f6eaf1','#8d3f6e'], APPROVE:['#e6f0ea','#2f6b4d'], AUTO:['#fae9e7','#85192b'], DISPATCH:['#e5efe8','#1f5a3d'], PERMS:['#f2f2ec','#3e4239'], PRICE:['#fdf3ea','#9a6a12'], PURCHASE:['#f2f2ec','#3e4239'] }[a[1]];
+      return { ts:'21 Sep ' + a[0], kind:a[1], text:a[2], by:a[3], kBg:cols[0], kFg:cols[1] };
+    });
+
+    // ---- Android ----
+    const recvItems = [
+      ['sugar','Sugar','சர்க்கரை',150],
+      ['rice','Rice','அரிசி',200],
+      ['toor','Toor dal','துவரம் பருப்பு',80],
+      ['oil','Groundnut oil','கடலை எண்ணெய்',40],
+      ['salt','Salt','உப்பு',100]
+    ];
+    const bump = (k, d) => () => this.setState(p => ({ recvQty: Object.assign({}, p.recvQty, { [k]: Math.max(0, p.recvQty[k] + d) }) }));
+    const recvLines = recvItems.map(i => {
+      const got = s.recvQty[i[0]];
+      const diff = got - i[3];
+      return {
+        en:i[1], ta:i[2], sent:i[3] + ' kg', got: got,
+        minus: bump(i[0], -5), plus: bump(i[0], 5),
+        short: diff !== 0, diff: (diff > 0 ? '+' : '') + diff + ' kg',
+        shortTa: diff < 0 ? 'குறைவாக உள்ளது' : 'அதிகமாக உள்ளது',
+        bg: diff === 0 ? '#fff' : '#fdf6f5',
+        inputBd: diff === 0 ? '#e2dbc8' : '#e08078'
+      };
+    });
+    const recvSummary = recvItems.map(i => {
+      const got = s.recvQty[i[0]];
+      return { en:i[1], ta:i[2], sent:i[3], got:got, fg: got === i[3] ? '#2f6b4d' : '#85192b', bg: got === i[3] ? '#fff' : '#fdf6f5' };
+    });
+    const ctas = [
+      ['தொடரவும்','Continue with DSP-2291','#173a2a'],
+      ['அடுத்து — படம்','Next — take photo','#173a2a'],
+      ['அடுத்து — சரிபார்','Next — review','#173a2a'],
+      ['உறுதிசெய்து அனுப்பு','Confirm receipt','#3f7d5c']
+    ];
+    const cta = ctas[s.recvStep];
+
+    return {
+      isWeb: s.surface === 'web', isApp: s.surface === 'app',
+      showWeb: () => this.setState({ surface: 'web' }),
+      showApp: () => this.setState({ surface: 'app' }),
+      tabWeb: this.tabStyle(s.surface === 'web'), tabApp: this.tabStyle(s.surface === 'app'),
+      goOverview: this.go('overview'), goShops: this.go('shops'), goDispatches: this.go('dispatches'),
+      goRequests: this.go('requests'), goIssues: this.go('issues'), goItems: this.go('items'),
+      goVendors: this.go('vendors'), goAdmins: this.go('admins'), goAudit: this.go('audit'),
+      navOverview: this.navStyle('overview'), navShops: this.navStyle('shops'),
+      navDispatches: this.navStyle('dispatches'), navRequests: this.navStyle('requests'),
+      navIssues: this.navStyle('issues'), navItems: this.navStyle('items'),
+      navVendors: this.navStyle('vendors'), navAdmins: this.navStyle('admins'), navAudit: this.navStyle('audit'),
+      onOverview: s.screen === 'overview', onShops: s.screen === 'shops', onDispatches: s.screen === 'dispatches',
+      onRequests: s.screen === 'requests', onIssues: s.screen === 'issues', onItems: s.screen === 'items',
+      onVendors: s.screen === 'vendors', onAdmins: s.screen === 'admins', onAudit: s.screen === 'audit',
+      attention, pipeline, lowStock, supervisors, shopStock,
+      shop: { name:'S-142 Anna Nagar', nameTa:'அண்ணா நகர் கடை', meta:'Small shop · SUP-01 Chennai · synced 4 min ago' },
+      dispatches, dispFilters, det, resolveDet: () => this.setState(p => ({ issueState: Object.assign({}, p.issueState, { ['det-' + detSrc.id]: true }) })),
+      requests, issues, items, item, priceHistory, vendors, purchases, admins, audit, auditFilters,
+      recvSteps: [0,1,2,3].map(i => ({ bg: i <= s.recvStep ? 'var(--accent)' : '#e9e2d1' })),
+      recvStepLabel: 'step ' + (s.recvStep + 1) + ' of 4',
+      recv0: s.recvStep === 0, recv1: s.recvStep === 1, recv2: s.recvStep === 2, recv3: s.recvStep === 3,
+      recvNext: () => this.setState(p => ({ recvStep: (p.recvStep + 1) % 4 })),
+      recvBack: () => this.setState(p => ({ recvStep: Math.max(0, p.recvStep - 1) })),
+      recvCtaTa: cta[0], recvCtaEn: cta[1], recvCtaBg: cta[2],
+      recvLines, recvSummary,
+      codeDigits: ['4','8','2','9','1','6'].map(v => ({ v })),
+      otpDigits: ['7','3','1','','',''].map((v, i) => ({ v, bd: i === 3 ? '#1f5a3d' : '#e2dbc8' })),
+      homeChips: [
+        { ta:'அரிசி', kg:'620', bg:'#f2f2ec', fg:'#3e4239' },
+        { ta:'சர்க்கரை', kg:'8', bg:'#fae9e7', fg:'#85192b' },
+        { ta:'கோதுமை', kg:'340', bg:'#f2f2ec', fg:'#3e4239' }
+      ],
+      queued: [
+        { ta:'நாள் இறுதி கணக்கு', en:'Daily closing · 20 Sep', when:'21:04' },
+        { ta:'பொருள் பெறுதல்', en:'Receipt for DSP-2284', when:'16:22' },
+        { ta:'பிரச்சினை', en:'Issue · scale reading wrong', when:'15:40' }
+      ],
+      closingLines: [
+        { ta:'அரிசி', en:'Rice', open:'740', left:'620', bd:'#e2dbc8', bg:'#fcfaf4' },
+        { ta:'சர்க்கரை', en:'Sugar', open:'160', left:'8', bd:'#e08078', bg:'#fdf6f5' },
+        { ta:'துவரம் பருப்பு', en:'Toor dal', open:'280', left:'210', bd:'#e2dbc8', bg:'#fcfaf4' },
+        { ta:'கோதுமை', en:'Wheat', open:'400', left:'340', bd:'#e2dbc8', bg:'#fcfaf4' },
+        { ta:'உப்பு', en:'Salt', open:'600', left:'—', bd:'#1f5a3d', bg:'#fff' }
+      ],
+      reviewRows: [
+        { ta:'விற்பனை (கணக்கிட்டது)', en:'Sales worked out from stock', val:'₹40,150', fg:'#173a2a' },
+        { ta:'ரொக்கம்', en:'Cash collected', val:'₹24,100', fg:'#173a2a' },
+        { ta:'யுபிஐ', en:'UPI collected', val:'₹14,810', fg:'#173a2a' },
+        { ta:'வித்தியாசம்', en:'Difference', val:'−₹1,240', fg:'#85192b' }
+      ],
+      requestPicker: [
+        { ta:'சர்க்கரை', en:'Sugar', have:'8', picked:true, qty:'150', tick:'✓', boxBd:'#1f5a3d', boxBg:'#1f5a3d', bg:'#f4f8f5' },
+        { ta:'துவரம் பருப்பு', en:'Toor dal', have:'210', picked:true, qty:'80', tick:'✓', boxBd:'#1f5a3d', boxBg:'#1f5a3d', bg:'#f4f8f5' },
+        { ta:'அரிசி', en:'Rice', have:'620', picked:false, qty:'', tick:'', boxBd:'#d8cfb8', boxBg:'#fff', bg:'#fff' },
+        { ta:'கோதுமை', en:'Wheat', have:'340', picked:false, qty:'', tick:'', boxBd:'#d8cfb8', boxBg:'#fff', bg:'#fff' },
+        { ta:'கடலை எண்ணெய்', en:'Groundnut oil', have:'96', picked:false, qty:'', tick:'', boxBd:'#d8cfb8', boxBg:'#fff', bg:'#fff' },
+        { ta:'உப்பு', en:'Salt', have:'568', picked:false, qty:'', tick:'', boxBd:'#d8cfb8', boxBg:'#fff', bg:'#fff' }
+      ],
+      supShops: [
+        { ta:'குமாரபாளையம்', code:'S-198', kg:'520 kg', note:'low', fg:'#9a6a12', bg:'#fdf9f4' },
+        { ta:'ஆத்தூர்', code:'S-201', kg:'1,340 kg', note:'ok', fg:'#3e4239', bg:'#fff' },
+        { ta:'மேட்டூர்', code:'S-209', kg:'860 kg', note:'ok', fg:'#3e4239', bg:'#fff' },
+        { ta:'ஓமலூர்', code:'S-214', kg:'240 kg', note:'low', fg:'#9a6a12', bg:'#fdf9f4' },
+        { ta:'எடப்பாடி', code:'S-222', kg:'1,010 kg', note:'ok', fg:'#3e4239', bg:'#fff' },
+        { ta:'சங்ககிரி', code:'S-229', kg:'0 kg', note:'no sync', fg:'#85192b', bg:'#fdf6f5' }
+      ]
+    };
+  }
+
+  setReq(id, v) {
+    this.setState(p => ({ reqState: Object.assign({}, p.reqState, { [id]: v }) }));
+  }
+}
+</script>
+</body>
+</html>

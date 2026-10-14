@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "npm install -g pnpm@9.15.9 && pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm --filter @aram/shared build && npx expo export --platform web",
+  "outputDirectory": "dist",
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
