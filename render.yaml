@@ -27,6 +27,11 @@ services:
         sync: false
       - key: CORS_ORIGINS
         sync: false
+      # Passwords for the preview accounts created on first deploy (choose your own).
+      - key: SEED_ADMIN_PASSWORD
+        sync: false
+      - key: SEED_SHOP_PASSWORD
+        sync: false
       - key: SMS_PROVIDER
         value: console
       - key: S3_ENDPOINT

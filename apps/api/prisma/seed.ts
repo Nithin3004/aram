@@ -83,8 +83,9 @@ const VENDORS: [string, string, string, string[]][] = [
   ['Virudhunagar Spices', 'விருதுநகர் மசாலா', 'Chilli, spices, salt', ['ITM-09', 'ITM-24', 'ITM-25', 'ITM-26', 'ITM-27', 'ITM-28', 'ITM-29', 'ITM-30']],
 ];
 
-const PASSWORD = 'Shop@123';
-const ADMIN_PASSWORD = 'Admin@123';
+// Local preview defaults; a deployed seed takes them from secret env vars so a public repo doesn't reveal them.
+const PASSWORD = process.env.SEED_SHOP_PASSWORD || 'Shop@123';
+const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD || 'Admin@123';
 
 async function main() {
   if (await prisma.shop.count()) {
@@ -503,8 +504,9 @@ async function main() {
   await prisma.item.update({ where: { id: itemByCode.get('ITM-23')!.id }, data: { isActive: false } });
 
   console.log(`Seeded ${sims.length + 1} shops, ${items.length} items, ${ledger.length} ledger entries, ${closingLineRows.length} closing lines.`);
-  console.log(`HO logins: karthik / anitha / vignesh / nandhini / viewer — password ${ADMIN_PASSWORD}`);
-  console.log(`Shop logins: s001 (small), sup07 (supervisor), s003 … — password ${PASSWORD}`);
+  // Passwords are not printed: build logs on the host are not a safe place for them.
+  console.log('HO logins: karthik / anitha / vignesh / nandhini / viewer');
+  console.log('Shop logins: s001 (small), sup07 (supervisor), s003 …');
 }
 
 main()

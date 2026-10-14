@@ -30,6 +30,8 @@ Never paste passwords or keys into chat. Enter them only in the Supabase / Rende
    - `DATABASE_URL` = Supabase session pooler URI (step 2.2)
    - `S3_ENDPOINT`, `S3_REGION`, `S3_ACCESS_KEY`, `S3_SECRET_KEY` = step 2.4
    - `CORS_ORIGINS` = leave `https://example.com` for now; fixed in step 5.
+   - `SEED_ADMIN_PASSWORD` = a password you choose for the HO accounts (at least 8 characters)
+   - `SEED_SHOP_PASSWORD` = a password you choose for all shop accounts (at least 8 characters)
 3. Deploy. The first build also creates the tables and loads the preview data (~5–10 min).
 4. Open `https://<your-api>.onrender.com/api/health` → should show `{"ok":true}`. Copy the API address.
 
@@ -52,5 +54,6 @@ uptimerobot.com (free) → New monitor → HTTP(s) → `https://<your-api>.onren
 One always-on free service fits in Render's 750 free hours a month.
 
 ## Logins (preview data)
-HO: `karthik` / `Admin@123` · Shops: `s001`, `sup07` … / `Shop@123` (OTP shown on screen).
-These demo passwords are public in this repo — use the trial only with preview data.
+HO: `karthik`, `anitha`, `vignesh`, `nandhini`, `viewer` with your `SEED_ADMIN_PASSWORD`.
+Shops: `s001` … `s369`, `sup01` … `sup10` with your `SEED_SHOP_PASSWORD`. OTP is shown on screen.
+Because the OTP is on screen, the password is the only protection — use the trial only with preview data.
