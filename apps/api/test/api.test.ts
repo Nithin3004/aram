@@ -411,6 +411,32 @@ describe('login security & append-only records', () => {
     expect(admin.body.otpRequired).toBe(true);
   });
 
+  it('users change their own password only with the current one', async () => {
+    const http = request(app.getHttpServer());
+    expect((await api('s002').post('/auth/change-password', { currentPassword: 'wrong-one', newPassword: 'new-pass-123' })).status).toBe(400);
+    expect((await api('s002').post('/auth/change-password', { currentPassword: 'pw-123456', newPassword: 'short' })).status).toBe(400);
+    expect((await api('s002').post('/auth/change-password', { currentPassword: 'pw-123456', newPassword: 'new-pass-123' })).status).toBe(201);
+    const old = await http.post('/api/auth/login').send({ username: 's002', password: 'pw-123456', deviceId: 'device-s002' });
+    expect(old.status).toBe(401);
+    const fresh = await http.post('/api/auth/login').send({ username: 's002', password: 'new-pass-123', deviceId: 'device-s002' });
+    expect(fresh.status).toBe(201);
+  });
+
+  it('only Super Admin resets passwords, and a reset clears a lockout', async () => {
+    const http = request(app.getHttpServer());
+    // 'locky' (shop S-002's second login) was locked by the lockout test above; reset via the shop endpoint targets the shop's first login,
+    // so lock 'viewer' and reset it through the admin endpoint instead.
+    for (let i = 0; i < 5; i++) await http.post('/api/auth/login').send({ username: 'viewer', password: 'nope', deviceId: 'device-viewer' });
+    const viewer = await prisma.user.findUniqueOrThrow({ where: { username: 'viewer' } });
+    expect((await api('ops').post(`/admins/${viewer.id}/reset-password`, { newPassword: 'reset-pass-1' })).status).toBe(403);
+    expect((await api('s001').post(`/shops/${ids.s1}/reset-password`, { newPassword: 'reset-pass-1' })).status).toBe(403);
+    expect((await api('super').post(`/admins/${viewer.id}/reset-password`, { newPassword: 'reset-pass-1' })).status).toBe(201);
+    const after = await http.post('/api/auth/login').send({ username: 'viewer', password: 'reset-pass-1', deviceId: 'device-viewer' });
+    expect(after.status).toBe(201);
+    expect((await api('super').post(`/shops/${ids.s1}/reset-password`, { newPassword: 'shop-reset-1' })).status).toBe(201);
+    expect(await prisma.auditLog.count({ where: { action: 'PASSWORD_RESET' } })).toBe(2);
+  });
+
   it('audit log and stock ledger reject UPDATE and DELETE', async () => {
     await expect(prisma.$executeRawUnsafe('UPDATE "AuditLog" SET "summary" = \'x\'')).rejects.toThrow(/append-only/);
     await expect(prisma.$executeRawUnsafe('DELETE FROM "AuditLog"')).rejects.toThrow(/append-only/);

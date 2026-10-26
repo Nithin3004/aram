@@ -21,6 +21,11 @@ export const verifyOtpSchema = z.object({
 
 export const languageSchema = z.object({ language: z.enum(['en', 'ta']) });
 
+const newPassword = z.string().min(8).max(128);
+export const changePasswordSchema = z.object({ currentPassword: z.string().min(1).max(128), newPassword });
+/** Super Admin sets a new password for someone who forgot theirs. */
+export const resetPasswordSchema = z.object({ newPassword });
+
 export const createAdminSchema = z.object({
   name: z.string().trim().min(1).max(80),
   username: z.string().trim().min(3).max(64).regex(/^[a-z0-9._-]+$/),

@@ -1,0 +1,4 @@
+code,type,name_en,name_ta,supervisor_code,username,phone
+SUP-01,SUPERVISOR,Chennai,சென்னை மேற்பார்வை,,sup01,9444000001
+S-001,SMALL,Anna Nagar,அண்ணா நகர்,SUP-01,s001,9800000001
+S-002,SMALL,Tambaram,தாம்பரம்,SUP-01,s002,9800000002

@@ -10,7 +10,7 @@ import { Card, CountCard, Cta, Loading, Row, Screen, SectionTitle, SyncPill, Tag
 
 export default function Home() {
   const { t } = useTranslation();
-  const { signedIn, snapshot: s, queue, online, syncing, refresh, flush } = useApp();
+  const { signedIn, snapshot: s, queue, rejected, dismissRejected, online, syncing, refresh, flush } = useApp();
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
@@ -76,6 +76,18 @@ export default function Home() {
       }
     >
       <View style={{ padding: 16, gap: 14 }}>
+        {rejected.map((r) => (
+          <Card key={r.clientId} tone="danger" style={{ gap: 8 }}>
+            <Txt size={16} weight={600} color={colors.dangerText}>{t('app.rejectedTitle')} · {t(r.label.key, r.label.params)}</Txt>
+            <Txt size={12} color={colors.dangerText}>
+              {t('app.rejectedSub', { reason: r.errorCode.includes('.') ? t(r.errorCode, { defaultValue: r.error }) : r.error })}
+            </Txt>
+            <Pressable onPress={() => dismissRejected(r.clientId)}>
+              <Txt size={13} weight={600} color={colors.dangerText} style={{ textDecorationLine: 'underline' }}>{t('app.dismiss')}</Txt>
+            </Pressable>
+          </Card>
+        ))}
+
         {queue.length > 0 && (
           <View style={{ gap: 10 }}>
             {queue.map((q) => (

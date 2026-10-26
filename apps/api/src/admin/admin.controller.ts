@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { z } from 'zod';
-import { ALL_PERMISSIONS, createAdminSchema, settingsSchema, updateAdminSchema } from '@aram/shared';
+import { ALL_PERMISSIONS, createAdminSchema, resetPasswordSchema, settingsSchema, updateAdminSchema } from '@aram/shared';
 import { PrismaService } from '../prisma.service';
 import { AuthUser, CurrentUser, Roles } from '../common/auth-user';
 import { ZodPipe } from '../common/zod.pipe';
@@ -100,6 +100,41 @@ export class AdminController {
     });
   }
 
+  // ---- Password reset (Super Admin) ------------------------------------------
+
+  /** Reset an admin's password. */
+  @Post('admins/:id/reset-password')
+  @Roles('SUPER_ADMIN')
+  async resetAdminPassword(@CurrentUser() user: AuthUser, @Param('id') id: string, @Body(new ZodPipe(resetPasswordSchema)) body: { newPassword: string }) {
+    const target = await this.prisma.user.findUnique({ where: { id } });
+    if (!target || target.role === 'SHOP') throw notFound('Admin');
+    return this.resetPassword(user, target, body.newPassword);
+  }
+
+  /** Reset the login password of a shop account. */
+  @Post('shops/:id/reset-password')
+  @Roles('SUPER_ADMIN')
+  async resetShopPassword(@CurrentUser() user: AuthUser, @Param('id') shopId: string, @Body(new ZodPipe(resetPasswordSchema)) body: { newPassword: string }) {
+    const target = await this.prisma.user.findFirst({ where: { shopId, role: 'SHOP' } });
+    if (!target) throw notFound('Shop login');
+    return this.resetPassword(user, target, body.newPassword);
+  }
+
+  private async resetPassword(actor: AuthUser, target: { id: string; name: string; username: string }, newPassword: string) {
+    await this.prisma.$transaction(async (tx) => {
+      // Also clears a lockout so the person can sign in straight away.
+      await tx.user.update({
+        where: { id: target.id },
+        data: { passwordHash: await bcrypt.hash(newPassword, 10), failedAttempts: 0, lockedUntil: null },
+      });
+      await this.audit.log(
+        { actor, action: 'PASSWORD_RESET', entityType: 'User', entityId: target.id, summary: `Reset password for ${target.name} (${target.username})` },
+        tx,
+      );
+    });
+    return { ok: true };
+  }
+
   // ---- Activity log (read-only for everyone, retained forever) ---------------
 
   @Get('audit')
@@ -110,7 +145,7 @@ export class AdminController {
       prices: ['PRICE_CHANGE', 'ITEM_CREATE', 'ITEM_UPDATE'],
       dispatches: ['DISPATCH_CREATE', 'TRANSFER_ORDER', 'DISPATCH_SENT', 'DISPATCH_RECEIVE', 'RECEIVE_CODE_WRONG'],
       permissions: ['PERMS_CHANGE', 'ADMIN_CREATE', 'SHOP_CREATE', 'SETTINGS_CHANGE'],
-      logins: ['LOGIN', 'LOGIN_FAILED', 'LOGIN_PASSWORD_OK'],
+      logins: ['LOGIN', 'LOGIN_FAILED', 'LOGIN_PASSWORD_OK', 'PASSWORD_CHANGE', 'PASSWORD_CHANGE_FAILED', 'PASSWORD_RESET'],
     };
     const rows = await this.prisma.auditLog.findMany({
       where: {

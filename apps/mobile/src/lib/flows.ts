@@ -23,5 +23,8 @@ export const getDispatch = (id: string) => api<DispatchDetail>(`/dispatches/${id
 
 export const confirmSent = (id: string, lines: { itemId: string; sentGrams: number }[]) => api(`/dispatches/${id}/dispatch`, { body: { lines } });
 
+export const changePassword = (currentPassword: string, newPassword: string) =>
+  api('/auth/change-password', { body: { currentPassword, newPassword } });
+
 export const submitRecount = (issueId: string, lines: { itemId: string; receivedGrams: number }[], note: string) =>
   api(`/issues/${issueId}/recount`, { body: { lines, note } });

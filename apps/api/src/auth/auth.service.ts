@@ -189,6 +189,17 @@ export class AuthService {
     };
   }
 
+  async changePassword(userId: string, input: { currentPassword: string; newPassword: string }, ip?: string) {
+    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
+    if (!(await bcrypt.compare(input.currentPassword, user.passwordHash))) {
+      await this.audit.log({ actor: user, action: 'PASSWORD_CHANGE_FAILED', entityType: 'User', entityId: user.id, summary: 'Wrong current password', ip });
+      throw badRequest('auth.wrongPassword', 'Current password is wrong');
+    }
+    await this.prisma.user.update({ where: { id: userId }, data: { passwordHash: await bcrypt.hash(input.newPassword, 10) } });
+    await this.audit.log({ actor: user, action: 'PASSWORD_CHANGE', entityType: 'User', entityId: user.id, summary: 'Changed own password', ip });
+    return { ok: true };
+  }
+
   async setLanguage(userId: string, language: string) {
     await this.prisma.user.update({ where: { id: userId }, data: { language } });
     return { language };

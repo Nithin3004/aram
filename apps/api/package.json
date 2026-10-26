@@ -11,7 +11,8 @@
     "generate": "prisma generate",
     "seed": "ts-node --transpile-only prisma/seed.ts",
     "db:reset": "prisma migrate reset --force --skip-seed && ts-node --transpile-only prisma/seed.ts",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand",
+    "import": "ts-node --transpile-only prisma/import.ts"
   },
   "dependencies": {
     "@aram/shared": "workspace:*",
@@ -48,7 +49,9 @@
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
-    "roots": ["<rootDir>/test"],
+    "roots": [
+      "<rootDir>/test"
+    ],
     "testTimeout": 60000
   }
 }

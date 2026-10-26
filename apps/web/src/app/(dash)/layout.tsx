@@ -5,7 +5,8 @@ import { ReactNode, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../lib/auth';
 import { useData } from '../../lib/hooks';
-import { Avatar, Button, LangSwitch, Loading } from '../../ui';
+import { Avatar, Button, LangSwitch, Loading, Toast } from '../../ui';
+import { ChangePasswordDialog } from '../../components/PasswordDialogs';
 
 interface NavCounts {
   shops: number;
@@ -43,6 +44,8 @@ export default function DashLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const path = usePathname();
   const [open, setOpen] = useState(false);
+  const [changingPw, setChangingPw] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
   const nav = useData<NavCounts>(me ? '/dashboard/nav' : null);
 
   useEffect(() => {
@@ -109,12 +112,23 @@ export default function DashLayout({ children }: { children: ReactNode }) {
             <div style={{ minWidth: 0, flex: 1 }}>
               <div className="ellipsis" style={{ fontSize: 12, fontWeight: 500 }}>{me.name}</div>
               <div className="mono xsmall t-subtle">{t(`role.${me.role}`)}</div>
+              <Button variant="link" onClick={() => setChangingPw(true)}>{t('auth.changePassword')}</Button>
             </div>
             <Button variant="link" onClick={signOut}>{t('common.signOut')}</Button>
           </div>
         </nav>
         <main className="main">{children}</main>
       </div>
+      {changingPw && (
+        <ChangePasswordDialog
+          onClose={() => setChangingPw(false)}
+          onDone={() => {
+            setChangingPw(false);
+            setToast(t('auth.passwordChanged'));
+          }}
+        />
+      )}
+      <Toast message={toast} onDone={() => setToast(null)} />
     </div>
   );
 }

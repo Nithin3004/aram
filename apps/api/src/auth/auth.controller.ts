@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Ip, Patch, Post } from '@nestjs/common';
 import { z } from 'zod';
-import { languageSchema, loginSchema, verifyOtpSchema } from '@aram/shared';
+import { changePasswordSchema, languageSchema, loginSchema, verifyOtpSchema } from '@aram/shared';
 import { AuthUser, CurrentUser, Public } from '../common/auth-user';
 import { ZodPipe } from '../common/zod.pipe';
 import { AuthService } from './auth.service';
@@ -30,6 +30,11 @@ export class AuthController {
   @Get('me')
   me(@CurrentUser() user: AuthUser) {
     return this.auth.me(user.id);
+  }
+
+  @Post('change-password')
+  changePassword(@CurrentUser() user: AuthUser, @Body(new ZodPipe(changePasswordSchema)) body: z.infer<typeof changePasswordSchema>, @Ip() ip: string) {
+    return this.auth.changePassword(user.id, body, ip);
   }
 
   @Patch('language')

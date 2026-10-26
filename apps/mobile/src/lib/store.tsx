@@ -11,7 +11,10 @@ import i18n, { deviceLanguage, LANG_KEY } from './i18n';
 import { getJson, setJson, storage } from './storage';
 import type { ChildShop, ClosingDraft, CatalogItem, DispatchDetail, DispatchRow, IssueRow, Me, QueueItem, RequestRow, Snapshot, StockItem } from './types';
 
-const K = { token: 'aram.token', device: 'aram.device', snap: 'aram.snapshot', queue: 'aram.queue', sim: 'aram.simOffline' };
+const K = { token: 'aram.token', device: 'aram.device', snap: 'aram.snapshot', queue: 'aram.queue', rejected: 'aram.rejected', sim: 'aram.simOffline' };
+
+/** An offline entry the server refused; shown to the shop until dismissed. */
+export type RejectedItem = QueueItem & { errorCode: string; rejectedAt: string };
 
 export function deviceId(): string {
   let v = storage.get(K.device);
@@ -29,6 +32,8 @@ interface Store {
   signedIn: boolean;
   snapshot: Snapshot | null;
   queue: QueueItem[];
+  rejected: RejectedItem[];
+  dismissRejected: (clientId: string) => void;
   online: boolean;
   syncing: boolean;
   simOffline: boolean;
@@ -58,6 +63,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [language, setLang] = useState<'en' | 'ta'>(deviceLanguage());
   const flushing = useRef(false);
   const queueRef = useRef<QueueItem[]>([]);
+  const [rejected, setRejected] = useState<RejectedItem[]>([]);
+  const rejectedRef = useRef<RejectedItem[]>([]);
   const online = netOnline && !simOffline;
 
   const saveQueue = (q: QueueItem[]) => {
@@ -65,6 +72,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setQueue(q);
     setJson(K.queue, q);
   };
+  const saveRejected = (r: RejectedItem[]) => {
+    rejectedRef.current = r;
+    setRejected(r);
+    setJson(K.rejected, r);
+  };
+  const dismissRejected = useCallback((clientId: string) => {
+    saveRejected(rejectedRef.current.filter((r) => r.clientId !== clientId));
+  }, []);
 
   // ---- boot: restore everything from the device ----
   useEffect(() => {
@@ -78,6 +93,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const q = getJson<QueueItem[]>(K.queue) ?? [];
     queueRef.current = q;
     setQueue(q);
+    const r = getJson<RejectedItem[]>(K.rejected) ?? [];
+    rejectedRef.current = r;
+    setRejected(r);
     setReady(true);
     return NetInfo.addEventListener((s) => setNetOnline(s.isConnected !== false));
   }, []);
@@ -164,9 +182,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         } catch (e) {
           if (e instanceof OfflineError) break;
           if (e instanceof ApiError && e.status === 401) break;
-          // Rejected by the server (e.g. day already closed): drop it, remember why.
+          // Rejected by the server (e.g. day already closed): take it out of the queue
+          // and keep it in a visible "not accepted" list until the shop dismisses it.
           if (e instanceof ApiError && e.status >= 400 && e.status < 500) {
             saveQueue(queueRef.current.filter((q) => q.clientId !== item.clientId));
+            saveRejected([...rejectedRef.current, { ...item, error: e.message, errorCode: e.code, rejectedAt: new Date().toISOString() }]);
           } else {
             saveQueue(queueRef.current.map((q) => (q.clientId === item.clientId ? { ...q, error: (e as Error).message } : q)));
             break;
@@ -250,8 +270,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<Store>(
-    () => ({ ready, signedIn, snapshot, queue, online, syncing, simOffline, language, setLanguage, setSimOffline, login, verifyOtp, resendOtp, signOut, refresh, flush, enqueue, markClosedLocally }),
-    [ready, signedIn, snapshot, queue, online, syncing, simOffline, language, setLanguage, setSimOffline, login, verifyOtp, resendOtp, signOut, refresh, flush, enqueue, markClosedLocally],
+    () => ({ ready, signedIn, snapshot, queue, rejected, dismissRejected, online, syncing, simOffline, language, setLanguage, setSimOffline, login, verifyOtp, resendOtp, signOut, refresh, flush, enqueue, markClosedLocally }),
+    [ready, signedIn, snapshot, queue, rejected, dismissRejected, online, syncing, simOffline, language, setLanguage, setSimOffline, login, verifyOtp, resendOtp, signOut, refresh, flush, enqueue, markClosedLocally],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

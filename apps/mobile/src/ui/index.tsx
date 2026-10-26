@@ -4,7 +4,7 @@
  */
 import { ReactNode, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleProp, StyleSheet, Text, TextInput, TextInputProps, TextStyle, View, ViewStyle } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, RefreshControl, ScrollView, StyleProp, StyleSheet, Text, TextInput, TextInputProps, TextStyle, View, ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, fontFamily, radii, tones, touch, type Weight } from '../theme';
 import type { StatusTone } from '@aram/shared';
@@ -406,7 +406,16 @@ const s = StyleSheet.create({
   countBadge: { width: 44, height: 44, borderRadius: radii.xxl, alignItems: 'center', justifyContent: 'center' },
   row: { paddingHorizontal: 16, paddingVertical: 13, borderBottomWidth: 1, borderColor: colors.divider, flexDirection: 'row', alignItems: 'center', gap: 12 },
   numField: { height: touch.target, borderWidth: 1.5, borderRadius: radii.xxl, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 10, gap: 5 },
-  numInput: { flex: 1, minWidth: 0, fontSize: 22, textAlign: 'center', color: colors.text, padding: 0, outlineStyle: 'none' } as unknown as TextStyle, // outlineStyle: web-only, hides the focus ring
+  numInput: {
+    flex: 1,
+    minWidth: 0,
+    fontSize: 22,
+    textAlign: 'center',
+    color: colors.text,
+    padding: 0,
+    // Web only: hide the browser focus ring inside the bordered box. Not a valid style on Android.
+    ...(Platform.OS === 'web' ? ({ outlineStyle: 'none' } as unknown as TextStyle) : {}),
+  },
   stepBtn: { width: touch.target, height: touch.target, borderRadius: radii.xxl, borderWidth: 1.5, borderColor: colors.inputBorder, backgroundColor: colors.card, alignItems: 'center', justifyContent: 'center' },
   input: { height: 52, borderWidth: 1.5, borderColor: colors.inputBorder, borderRadius: radii.xxl, backgroundColor: colors.card, paddingHorizontal: 14, fontSize: 16, color: colors.text },
   codeBox: { flex: 1, height: 58, borderWidth: 1.5, borderRadius: radii.xl, backgroundColor: colors.inputBg, alignItems: 'center', justifyContent: 'center' },

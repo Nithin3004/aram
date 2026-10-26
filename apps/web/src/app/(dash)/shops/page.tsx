@@ -7,6 +7,7 @@ import { api } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth';
 import { useAction, useData, useLocalName } from '../../../lib/hooks';
 import { Bar, Button, Card, Empty, Field, FormError, Input, Loading, Modal, PageHeader, Select, Tag, THead, Toast, TRow } from '../../../ui';
+import { ResetPasswordDialog } from '../../../components/PasswordDialogs';
 
 interface ShopRow {
   id: string;
@@ -59,6 +60,7 @@ function ShopsScreen() {
   const [sel, setSel] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const detail = useData<ShopDetail>(sel ? `/shops/${sel}` : null);
 
@@ -177,6 +179,7 @@ function ShopsScreen() {
                   </div>
                 </div>
                 <div className="row" style={{ marginLeft: 'auto' }}>
+                  {d.type !== 'HO' && me?.role === 'SUPER_ADMIN' && <Button onClick={() => setResetting(true)}>{t('auth.resetPassword')}</Button>}
                   {d.type !== 'HO' && <Button onClick={() => setShowHistory((v) => !v)}>{t('shops.salesHistory')}</Button>}
                   {d.type !== 'HO' && can('CREATE_DISPATCH') && (
                     <Button variant="primary" onClick={() => router.push(`/dispatches?new=1&dest=${d.id}`)}>{t('shops.dispatchStock')}</Button>
@@ -265,6 +268,17 @@ function ShopsScreen() {
             setAdding(false);
             setToast(t('common.saved'));
             void list.reload();
+          }}
+        />
+      )}
+      {resetting && d && (
+        <ResetPasswordDialog
+          name={`${d.code} ${name(d)}`}
+          path={`/shops/${d.id}/reset-password`}
+          onClose={() => setResetting(false)}
+          onDone={() => {
+            setResetting(false);
+            setToast(t('auth.resetDone', { name: `${d.code} ${name(d)}` }));
           }}
         />
       )}
