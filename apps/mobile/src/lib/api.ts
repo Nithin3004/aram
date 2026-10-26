@@ -1,6 +1,11 @@
 import { Platform } from 'react-native';
 
-export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4000/api';
+/** All API routes live under /api; accept the server address with or without it. */
+function apiBase(raw: string): string {
+  const u = raw.trim().replace(/\/+$/, '');
+  return u.endsWith('/api') ? u : `${u}/api`;
+}
+export const API_URL = apiBase(process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4000/api');
 
 export class ApiError extends Error {
   constructor(
