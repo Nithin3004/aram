@@ -15,7 +15,10 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -30,12 +33,25 @@
       "expo-sqlite",
       [
         "expo-camera",
-        { "cameraPermission": "The camera is used to scan delivery QR codes and photograph received goods." }
+        {
+          "cameraPermission": "The camera is used to scan delivery QR codes and photograph received goods.",
+          "recordAudioAndroid": false
+        }
       ],
       [
         "expo-image-picker",
-        { "cameraPermission": "The camera is used to photograph received goods." }
+        {
+          "cameraPermission": "The camera is used to photograph received goods.",
+          "microphonePermission": false
+        }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "01211560-e966-41fc-9a4e-f903c0ece694"
+      }
+    },
+    "owner": "nithin3004"
   }
 }
