@@ -334,12 +334,34 @@ model ClosingLine {
   receivedGrams   Int
   sentOutGrams    Int
   adjustmentGrams Int
+  /// Worked out: opening + received − sent + adjustments + purchased − sold.
   closingGrams    Int
+  /// Sales quantity typed by the shop (loose + packs).
   soldGrams       Int
+  /// Average selling rate (sales amount ÷ qty), paise per kg/L.
   pricePaisePerKg Int
+  /// Sales amount (qty × rate typed, or pack prices).
   expectedPaise   Int
+  /// The shop's own purchase that day (loose + packs) and what it paid.
+  purchaseGrams   Int @default(0)
+  purchasePaise   Int @default(0)
 
   @@unique([closingId, itemId])
+}
+
+/// Stock each shop holds when it starts using the system (quantity and cost rate), entered once.
+model OpeningStock {
+  id          String   @id @default(cuid())
+  shopId      String
+  itemId      String
+  grams       Int
+  /// Cost per kg/L in paise (optional) — gives profit a starting cost.
+  ratePaise   Int?
+  enteredById String
+  enteredAt   DateTime @default(now())
+
+  @@unique([shopId, itemId])
+  @@index([itemId])
 }
 
 model Setting {

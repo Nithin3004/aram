@@ -78,6 +78,8 @@ export interface ClosingDraft {
   businessDate: string;
   alreadySubmitted: boolean;
   previousClosingAt: string | null;
+  /** False until the shop has entered its opening stock (first use). */
+  openingStockSet?: boolean;
   varianceTolerancePaise: number;
   closingDueTime: string;
   lines: { itemId: string; nameEn: string; nameTa: string; unit?: 'kg' | 'L'; openingGrams: number; receivedGrams: number; sentOutGrams: number; adjustmentGrams: number; pricePaisePerKg: number }[];

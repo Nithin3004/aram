@@ -8,6 +8,7 @@ import { useAuth } from '../../../lib/auth';
 import { useAction, useData, useLocalName } from '../../../lib/hooks';
 import { Bar, Button, Card, Empty, Field, FormError, Input, Loading, Modal, PageHeader, Select, Tag, THead, Toast, TRow } from '../../../ui';
 import { ResetPasswordDialog } from '../../../components/PasswordDialogs';
+import { EditShopDialog, OpeningStockDialog } from '../../../components/ShopDialogs';
 
 interface ShopRow {
   id: string;
@@ -28,8 +29,10 @@ interface ShopDetail {
   nameEn: string;
   nameTa: string;
   type: 'HO' | 'SUPERVISOR' | 'SMALL';
-  parent: { code: string; nameEn: string; nameTa: string } | null;
+  parent: { id?: string; code: string; nameEn: string; nameTa: string } | null;
   totalGrams: number;
+  phone?: string;
+  openingStockSet: boolean;
   stock: { itemId: string; nameEn: string; nameTa: string; unit?: string; onHandGrams: number; daysLeft: number | null; avgDailySoldGrams: number; low: boolean; watch: boolean }[];
   sales: null | {
     today: null | { expectedRevenuePaise: number; cashPaise: number; upiPaise: number; variancePaise: number; varianceFlagged: boolean };
@@ -61,6 +64,8 @@ function ShopsScreen() {
   const [showHistory, setShowHistory] = useState(false);
   const [adding, setAdding] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [opening, setOpening] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const detail = useData<ShopDetail>(sel ? `/shops/${sel}` : null);
 
@@ -179,6 +184,8 @@ function ShopsScreen() {
                   </div>
                 </div>
                 <div className="row" style={{ marginLeft: 'auto' }}>
+                  {me?.role === 'SUPER_ADMIN' && <Button onClick={() => setEditing(true)}>{t('shops.edit')}</Button>}
+                  {!d.openingStockSet && can('CREATE_DISPATCH') && <Button onClick={() => setOpening(true)}>{t('shops.openingStock')}</Button>}
                   {d.type !== 'HO' && me?.role === 'SUPER_ADMIN' && <Button onClick={() => setResetting(true)}>{t('auth.resetPassword')}</Button>}
                   {d.type !== 'HO' && <Button onClick={() => setShowHistory((v) => !v)}>{t('shops.salesHistory')}</Button>}
                   {d.type !== 'HO' && can('CREATE_DISPATCH') && (
@@ -267,6 +274,31 @@ function ShopsScreen() {
           onDone={() => {
             setAdding(false);
             setToast(t('common.saved'));
+            void list.reload();
+          }}
+        />
+      )}
+      {editing && d && (
+        <EditShopDialog
+          shop={{ ...d, parentId: (list.data ?? []).find((s) => s.id === d.id)?.parentId ?? null }}
+          supervisors={(list.data ?? []).filter((s) => s.type === 'SUPERVISOR')}
+          onClose={() => setEditing(false)}
+          onDone={() => {
+            setEditing(false);
+            setToast(t('common.saved'));
+            void detail.reload();
+            void list.reload();
+          }}
+        />
+      )}
+      {opening && d && (
+        <OpeningStockDialog
+          shop={d}
+          onClose={() => setOpening(false)}
+          onDone={() => {
+            setOpening(false);
+            setToast(t('shops.openingDone'));
+            void detail.reload();
             void list.reload();
           }}
         />

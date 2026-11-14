@@ -18,6 +18,7 @@ interface Item {
   networkGrams: number;
   changedOn: string | null;
   scheduled: { pricePaisePerKg: number; effectiveFrom: string } | null;
+  baseCostPaisePerKg: number | null;
 }
 interface PriceRow { effectiveFrom: string; pricePaisePerKg: number; by: string }
 
@@ -104,13 +105,20 @@ function ItemDetail({ item, onChanged }: { item: Item; onChanged: (msg: string) 
   const act = useAction();
   const [price, setPrice] = useState(item.pricePaisePerKg != null ? rs(item.pricePaisePerKg) : '');
   const [names, setNames] = useState({ nameEn: item.nameEn, nameTa: item.nameTa });
-  const tomorrow = addDays(businessDate(), 1);
+  const [cost, setCost] = useState(item.baseCostPaisePerKg != null ? rs(item.baseCostPaisePerKg) : '');
+  // A product's first price applies today; later changes from the next day.
+  const effective = item.pricePaisePerKg == null ? businessDate() : addDays(businessDate(), 1);
 
   const updatePrice = () =>
     void act.run(async () => {
       await api(`/items/${item.id}/price`, { body: { pricePaisePerKg: rupeesToPaise(price) } });
       await history.reload();
-      onChanged(t('items.scheduled', { price, date: formatIstDate(tomorrow) }));
+      onChanged(t('items.scheduled', { price, date: formatIstDate(effective) }));
+    });
+  const saveCost = () =>
+    void act.run(async () => {
+      await api(`/items/${item.id}`, { method: 'PATCH', body: { baseCostPaisePerKg: cost.trim() ? rupeesToPaise(cost) : null } });
+      onChanged(t('common.saved'));
     });
   const toggleActive = () =>
     void act.run(async () => {
@@ -141,7 +149,7 @@ function ItemDetail({ item, onChanged }: { item: Item; onChanged: (msg: string) 
               {t('items.updatePrice')}
             </Button>
           </div>
-          <div className="form-hint">{t('items.priceNote', { date: formatIstDate(tomorrow) })}</div>
+          <div className="form-hint">{t('items.priceNote', { date: formatIstDate(effective) })}</div>
         </>
       )}
       <FormError>{act.error}</FormError>
@@ -167,6 +175,12 @@ function ItemDetail({ item, onChanged }: { item: Item; onChanged: (msg: string) 
             <Field label={t('items.nameTa')}><Input lang="ta" value={names.nameTa} onChange={(e) => setNames({ ...names, nameTa: e.target.value })} /></Field>
           </div>
           <Button disabled={act.busy || (names.nameEn === item.nameEn && names.nameTa === item.nameTa)} onClick={saveNames}>{t('items.saveNames')}</Button>
+          <div className="row" style={{ alignItems: 'flex-end', flexWrap: 'nowrap', marginTop: 8 }}>
+            <Field label={t('items.openingCost', { unit: t(`unit.${item.unit}`) })} hint={t('items.openingCostHint')}>
+              <Input numeric inputMode="decimal" value={cost} onChange={(e) => setCost(e.target.value)} />
+            </Field>
+            <Button disabled={act.busy} onClick={saveCost}>{t('items.saveCost')}</Button>
+          </div>
           <Button block variant="danger-outline" disabled={act.busy} onClick={toggleActive} className="" >
             {item.isActive ? t('items.deactivate') : t('items.activate')}
           </Button>

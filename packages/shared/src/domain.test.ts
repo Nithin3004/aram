@@ -1,4 +1,4 @@
-import { computeClosing, lowStock, matchCheck, soldGrams } from './domain';
+import { computeDailyEntry, DailyLineInput, emptyPack, lowStock, matchCheck, packTotal } from './domain';
 import { businessDate, istDayStart } from './dates';
 import { formatKg, formatRupees, kgToGrams, lineValuePaise, rupeesToPaise } from './units';
 import { en } from './i18n/en';
@@ -40,81 +40,78 @@ describe('matchCheck', () => {
   });
 });
 
-describe('sold qty', () => {
-  const base = { openingGrams: 740000, receivedGrams: 0, sentOutGrams: 0, adjustmentGrams: 0 };
-
-  it('sold = opening + received − closing', () => {
-    expect(soldGrams({ ...base, receivedGrams: 200000, closingGrams: 620000 })).toBe(320000);
+describe('packTotal (loose + packs → qty and amount)', () => {
+  it('converts loose + ½ and 1 packs, like the workbook example (4 kg + 20 × ½ + 10 × 1 = 24 kg)', () => {
+    const r = packTotal({ looseGrams: 4000, halfPacks: 20, onePacks: 10, ratePaise: 5000 });
+    expect(r.grams).toBe(24_000);
+    expect(r.paise).toBe(120_000); // 24 kg × ₹50
   });
-
-  it('subtracts supervisor transfers out', () => {
-    expect(soldGrams({ ...base, sentOutGrams: 120000, closingGrams: 600000 })).toBe(20000);
+  it('uses pack prices when given', () => {
+    // 10 × ½ kg packs at ₹27 each + 2 kg loose at ₹50 = ₹270 + ₹100
+    const r = packTotal({ looseGrams: 2000, halfPacks: 10, onePacks: 0, ratePaise: 5000, halfPackPricePaise: 2700 });
+    expect(r.grams).toBe(7000);
+    expect(r.paise).toBe(37_000);
   });
-
-  it('is negative when closing > opening + received', () => {
-    expect(soldGrams({ ...base, closingGrams: 750000 })).toBe(-10000);
+  it('rejects negatives', () => {
+    expect(() => packTotal({ looseGrams: -1, halfPacks: 0, onePacks: 0, ratePaise: 0 })).toThrow();
   });
 });
 
-describe('computeClosing / variance', () => {
-  const line = (over: Partial<Parameters<typeof computeClosing>[0]['lines'][0]> = {}) => ({
-    itemId: 'rice',
-    openingGrams: 740000,
+describe('computeDailyEntry (closing = opening + purchase − sales; money check)', () => {
+  const line = (over: Partial<DailyLineInput> = {}): DailyLineInput => ({
+    itemId: 'dal',
+    openingGrams: 50_000,
     receivedGrams: 0,
     sentOutGrams: 0,
     adjustmentGrams: 0,
-    closingGrams: 620000,
-    pricePaisePerKg: 5200,
+    purchase: emptyPack(),
+    sales: emptyPack(),
     ...over,
   });
 
-  it('computes expected revenue from sold qty × price', () => {
-    const r = computeClosing({ lines: [line()], cashPaise: 400000, upiPaise: 224000, varianceTolerancePaise: 10000 });
-    // 120 kg × ₹52 = ₹6,240
-    expect(r.expectedRevenuePaise).toBe(624000);
+  it('works out closing stock and amounts', () => {
+    const r = computeDailyEntry({
+      lines: [line({ purchase: { looseGrams: 20_000, halfPacks: 0, onePacks: 0, ratePaise: 8000 }, sales: { looseGrams: 10_000, halfPacks: 4, onePacks: 3, ratePaise: 9000 } })],
+      cashPaise: 100_000,
+      upiPaise: 35_000,
+      varianceTolerancePaise: 10_000,
+    });
+    const l = r.lines[0];
+    expect(l.purchaseGrams).toBe(20_000);
+    expect(l.purchasePaise).toBe(160_000);
+    expect(l.salesGrams).toBe(15_000); // 10 kg + 2 kg + 3 kg
+    expect(l.salesPaise).toBe(135_000);
+    expect(l.closingGrams).toBe(55_000); // 50 + 20 − 15
     expect(r.variancePaise).toBe(0);
     expect(r.varianceFlagged).toBe(false);
   });
 
-  it('variance = (cash + UPI) − expected, flagged beyond tolerance', () => {
-    const r = computeClosing({ lines: [line()], cashPaise: 400000, upiPaise: 100000, varianceTolerancePaise: 10000 });
-    expect(r.variancePaise).toBe(-124000);
-    expect(r.varianceFlagged).toBe(true);
+  it('includes stock received from HO and sent out on transfers', () => {
+    const r = computeDailyEntry({ lines: [line({ receivedGrams: 30_000, sentOutGrams: 5000, sales: { looseGrams: 10_000, halfPacks: 0, onePacks: 0, ratePaise: 0 } })], cashPaise: 0, upiPaise: 0, varianceTolerancePaise: 0 });
+    expect(r.lines[0].closingGrams).toBe(65_000);
   });
 
-  it('does not flag a gap within tolerance', () => {
-    const r = computeClosing({ lines: [line()], cashPaise: 400000, upiPaise: 214000, varianceTolerancePaise: 10000 });
-    expect(r.variancePaise).toBe(-10000);
-    expect(r.varianceFlagged).toBe(false);
+  it('flags a money gap beyond tolerance, short or over', () => {
+    const sales = { looseGrams: 10_000, halfPacks: 0, onePacks: 0, ratePaise: 5000 }; // ₹500
+    expect(computeDailyEntry({ lines: [line({ sales })], cashPaise: 30_000, upiPaise: 0, varianceTolerancePaise: 10_000 }).variancePaise).toBe(-20_000);
+    expect(computeDailyEntry({ lines: [line({ sales })], cashPaise: 30_000, upiPaise: 0, varianceTolerancePaise: 10_000 }).varianceFlagged).toBe(true);
+    expect(computeDailyEntry({ lines: [line({ sales })], cashPaise: 45_000, upiPaise: 0, varianceTolerancePaise: 10_000 }).varianceFlagged).toBe(false);
+    expect(computeDailyEntry({ lines: [line({ sales })], cashPaise: 70_000, upiPaise: 0, varianceTolerancePaise: 10_000 }).varianceFlagged).toBe(true);
   });
 
-  it('flags an excess as well as a shortfall', () => {
-    const r = computeClosing({ lines: [line()], cashPaise: 700000, upiPaise: 0, varianceTolerancePaise: 10000 });
-    expect(r.variancePaise).toBe(76000);
-    expect(r.varianceFlagged).toBe(true);
-  });
-
-  it('flags negative sold lines and gives them no revenue', () => {
-    const r = computeClosing({
-      lines: [line({ closingGrams: 750000 }), line({ itemId: 'salt', openingGrams: 10000, closingGrams: 5000, pricePaisePerKg: 2000 })],
-      cashPaise: 10000,
-      upiPaise: 0,
-      varianceTolerancePaise: 10000,
-    });
-    expect(r.negativeSoldLines.map((l) => l.itemId)).toEqual(['rice']);
-    expect(r.expectedRevenuePaise).toBe(10000);
+  it('flags sales larger than the stock available', () => {
+    const r = computeDailyEntry({ lines: [line({ openingGrams: 5000, sales: { looseGrams: 8000, halfPacks: 0, onePacks: 0, ratePaise: 1000 } })], cashPaise: 8000, upiPaise: 0, varianceTolerancePaise: 0 });
+    expect(r.lines[0].closingGrams).toBe(-3000);
+    expect(r.negativeLines).toHaveLength(1);
   });
 
   it('handles fractional kg exactly in integer paise', () => {
-    // 1.235 kg × ₹44.00 = ₹54.34
     expect(lineValuePaise(1235, 4400)).toBe(5434);
-    // 0.333 kg × ₹128.50 = 42.7905 → ₹42.79
     expect(lineValuePaise(333, 12850)).toBe(4279);
   });
 
-  it('rejects negative inputs', () => {
-    expect(() => computeClosing({ lines: [line({ closingGrams: -1 })], cashPaise: 0, upiPaise: 0, varianceTolerancePaise: 0 })).toThrow();
-    expect(() => computeClosing({ lines: [line()], cashPaise: -1, upiPaise: 0, varianceTolerancePaise: 0 })).toThrow();
+  it('rejects negative cash', () => {
+    expect(() => computeDailyEntry({ lines: [line()], cashPaise: -1, upiPaise: 0, varianceTolerancePaise: 0 })).toThrow();
   });
 });
 

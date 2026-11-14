@@ -68,7 +68,7 @@ export default function Home() {
       footer={
         <Cta
           tone={closedToday ? 'success' : 'warn'}
-          label={t('app.dailyClosing')}
+          label={t('app.dailyEntry')}
           sub={closedToday ? t('app.closingDone') : overdue ? t('app.closingOverdue', { time: due }) : t('app.closingDue', { time: due })}
           disabled={closedToday}
           onPress={() => router.push('/closing')}
@@ -76,6 +76,10 @@ export default function Home() {
       }
     >
       <View style={{ padding: 16, gap: 14 }}>
+        {s.draft.openingStockSet === false && (
+          <CountCard n="1" tone="warn" title={t('app.openingBanner')} sub={t('app.openingBannerSub')} onPress={() => router.push('/opening')} />
+        )}
+
         {rejected.map((r) => (
           <Card key={r.clientId} tone="danger" style={{ gap: 8 }}>
             <Txt size={16} weight={600} color={colors.dangerText}>{t('app.rejectedTitle')} · {t(r.label.key, r.label.params)}</Txt>

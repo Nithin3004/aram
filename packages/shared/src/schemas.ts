@@ -37,6 +37,7 @@ export const createAdminSchema = z.object({
 export const updateAdminSchema = z.object({
   permissions: z.array(z.enum(ALL_PERMISSIONS as [string, ...string[]])).optional(),
   isActive: z.boolean().optional(),
+  phone: z.string().regex(/^(\d{10})?$/).optional(),
 });
 
 export const createShopSchema = z.object({
@@ -65,6 +66,8 @@ export const updateItemSchema = z.object({
   nameEn: z.string().trim().min(1).max(80).optional(),
   nameTa: z.string().trim().min(1).max(80).optional(),
   isActive: z.boolean().optional(),
+  /** Opening cost rate (₹/kg or ₹/L in paise) used for profit before purchases exist; null clears. */
+  baseCostPaisePerKg: z.number().int().nonnegative().nullable().optional(),
 });
 
 export const priceChangeSchema = z.object({ pricePaisePerKg: z.number().int().positive() });
@@ -141,15 +144,40 @@ export const recountSchema = z.object({
   note: z.string().trim().max(500).default(''),
 });
 
+/** Loose qty and/or number of ½ and 1 kg/L packs, with a rate (and optional pack prices). */
+const packEntrySchema = z.object({
+  looseGrams: grams.default(0),
+  halfPacks: z.number().int().nonnegative().default(0),
+  onePacks: z.number().int().nonnegative().default(0),
+  ratePaise: paise.default(0),
+  halfPackPricePaise: paise.nullish(),
+  onePackPricePaise: paise.nullish(),
+});
+
+/** Daily entry (HO workbook): per product, the day's purchases and sales. Closing stock is worked out. */
 export const closingSchema = z.object({
   clientId,
   businessDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  /** When the count was taken on the device (UTC ISO). Movements after this belong to the next day. */
+  /** When the entry was made on the device (UTC ISO). Movements after this belong to the next day. */
   capturedAt: z.string().datetime(),
-  lines: z.array(z.object({ itemId: id, closingGrams: grams })).min(1),
+  lines: z.array(z.object({ itemId: id, purchase: packEntrySchema, sales: packEntrySchema })).min(1).max(60),
   cashPaise: paise,
   upiPaise: paise,
   note: z.string().trim().max(500).default(''),
+});
+
+/** Opening stock (quantity + optional cost rate) for a shop, entered once. HO may give shopId. */
+export const openingStockSchema = z.object({
+  shopId: id.optional(),
+  lines: z.array(z.object({ itemId: id, grams, ratePaise: paise.nullish() })).min(1).max(60),
+});
+
+export const updateShopSchema = z.object({
+  nameEn: z.string().trim().min(1).max(80).optional(),
+  nameTa: z.string().trim().max(80).optional(),
+  /** Login phone for OTP; empty clears it. */
+  phone: z.string().regex(/^(\d{10})?$/).optional(),
+  parentId: id.optional(),
 });
 
 export const settingsSchema = z.object({

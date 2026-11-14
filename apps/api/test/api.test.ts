@@ -327,40 +327,52 @@ describe('requests & approvals', () => {
   });
 });
 
-describe('daily closing', () => {
-  it('computes sold qty, expected revenue and flags variance; locks the day; de-dups sync', async () => {
+describe('daily entry (workbook model) & opening stock', () => {
+  const pack = (looseKg: number, rate: number, extra: Partial<{ halfPacks: number; onePacks: number }> = {}) => ({
+    looseGrams: looseKg * 1000,
+    halfPacks: extra.halfPacks ?? 0,
+    onePacks: extra.onePacks ?? 0,
+    ratePaise: rate * 100,
+  });
+  const none = { looseGrams: 0, halfPacks: 0, onePacks: 0, ratePaise: 0 };
+
+  it('records purchases and sales; closing = opening + purchase − sales; money gap; locks; de-dups sync', async () => {
     // S-001 holds rice 100 kg, sugar 69 kg (50 matched + 19 after the resolved mismatch).
     const draft = await api('s001').get('/closings/draft');
     expect(draft.status).toBe(200);
     const rice = draft.body.lines.find((l: { itemId: string }) => l.itemId === ids.rice);
     expect(rice.openingGrams + rice.receivedGrams).toBe(100_000);
+    expect(rice.pricePaisePerKg).toBe(5000); // HO price is the suggested selling rate
 
     const clientId = randomUUID();
     const body = {
       clientId,
       businessDate: businessDate(),
       capturedAt: new Date().toISOString(),
-      // Sold rice 40 kg (₹2,000) and sugar 9 kg (₹360) → expected ₹2,360.
       lines: [
-        { itemId: ids.rice, closingGrams: 60_000 },
-        { itemId: ids.sugar, closingGrams: 60_000 },
+        // Bought 10 kg rice at ₹42; sold 30 kg loose + 20 half-kg packs (10 kg) at ₹50 → 40 kg, ₹2,000.
+        { itemId: ids.rice, purchase: pack(10, 42), sales: pack(30, 50, { halfPacks: 20 }) },
+        // Sold 9 kg sugar at ₹40 → ₹360.
+        { itemId: ids.sugar, purchase: none, sales: pack(9, 40) },
       ],
       cashPaise: 150_000,
-      upiPaise: 60_000, // collected ₹2,100 → gap −₹260
+      upiPaise: 60_000, // collected ₹2,100 vs sales ₹2,360 → gap −₹260
       note: 'change given wrongly',
     };
     const a = await api('s001').post('/closings', body);
     expect(a.status).toBe(201);
     expect(a.body.expectedRevenuePaise).toBe(236_000);
+    expect(a.body.purchasePaise).toBe(42_000);
     expect(a.body.variancePaise).toBe(-26_000);
     expect(a.body.varianceFlagged).toBe(true);
-    expect(await balance(ids.s1, ids.rice)).toBe(60_000);
+    expect(await balance(ids.s1, ids.rice)).toBe(70_000); // 100 + 10 − 40
+    expect(await balance(ids.s1, ids.sugar)).toBe(60_000);
 
     const b = await api('s001').post('/closings', body);
     expect(b.status).toBe(201);
     expect(b.body.duplicate).toBe(true);
     expect(await prisma.dailyClosing.count({ where: { shopId: ids.s1 } })).toBe(1);
-    expect(await balance(ids.s1, ids.rice)).toBe(60_000);
+    expect(await balance(ids.s1, ids.rice)).toBe(70_000);
     expect(await prisma.issue.count({ where: { shopId: ids.s1, type: 'CASH_VARIANCE' } })).toBe(1);
 
     // A second, different submission for the same day is refused (locked).
@@ -368,35 +380,55 @@ describe('daily closing', () => {
     expect(c.status).toBe(409);
   });
 
-  it('flags negative sold qty', async () => {
-    // S-002 has no stock; claiming 5 kg left means closing > opening + received.
+  it('flags sales larger than the stock available', async () => {
     const r = await api('s002').post('/closings', {
       clientId: randomUUID(),
       businessDate: businessDate(),
       capturedAt: new Date().toISOString(),
-      lines: [{ itemId: ids.sugar, closingGrams: 5_000 }],
-      cashPaise: 0,
+      lines: [{ itemId: ids.sugar, purchase: none, sales: pack(5, 40) }],
+      cashPaise: 20_000,
       upiPaise: 0,
     });
     expect(r.status).toBe(201);
     expect(await prisma.issue.count({ where: { shopId: ids.s2, type: 'NEGATIVE_SOLD' } })).toBe(1);
   });
 
-  it('profit register: sales from closings, cost from purchase rate, HO only', async () => {
+  it('opening stock: entered once per shop; not after daily entries; HO can enter for any shop', async () => {
+    // S-002 already has a daily entry → must go through HO adjustments instead.
+    expect((await api('s002').post('/opening-stock', { lines: [{ itemId: ids.rice, grams: 1000 }] })).status).toBe(409);
+    // HO (with stock permission) enters it for the supervisor shop, with a cost rate.
+    expect((await api('viewer').post('/opening-stock', { shopId: ids.sup, lines: [{ itemId: ids.sugar, grams: 7000, ratePaise: 3800 }] })).status).toBe(403);
+    const before = await balance(ids.sup, ids.sugar);
+    expect((await api('ops').post('/opening-stock', { shopId: ids.sup, lines: [{ itemId: ids.sugar, grams: 7000, ratePaise: 3800 }] })).status).toBe(201);
+    expect(await balance(ids.sup, ids.sugar)).toBe(before + 7000);
+    expect((await api('ops').post('/opening-stock', { shopId: ids.sup, lines: [{ itemId: ids.sugar, grams: 1 }] })).status).toBe(409);
+    expect((await api('sup01').get(`/opening-stock/${ids.sup}`)).body.set).toBe(true);
+  });
+
+  it('Super Admin edits a shop: Tamil name and login phone', async () => {
+    expect((await api('ops').patch(`/shops/${ids.s2}`, { nameTa: 'கடை 002' })).status).toBe(403);
+    expect((await api('super').patch(`/shops/${ids.s2}`, { nameTa: 'தாம்பரம் கடை', phone: '9876543210' })).status).toBe(200);
+    expect((await prisma.shop.findUniqueOrThrow({ where: { id: ids.s2 } })).nameTa).toBe('தாம்பரம் கடை');
+    expect((await prisma.user.findUniqueOrThrow({ where: { username: 's002' } })).phone).toBe('9876543210');
+    expect((await api('super').patch(`/shops/${ids.s2}`, { phone: '12345' })).status).toBe(400);
+  });
+
+  it('profit register: sales from entries, cost = month average purchase rate across HO and shops', async () => {
     const today = businessDate();
     expect((await api('s001').get(`/reports/register?period=day&from=${today}&to=${today}`)).status).toBe(403);
-    // Give rice a purchase cost of ₹40/kg this month so cost of goods can be checked.
+    // HO bought 100 kg rice at ₹40; S-001 bought 10 kg at ₹42 → average ₹40.18/kg this month.
     await prisma.vendor.create({ data: { id: 'v-test', nameEn: 'Test Vendor' } });
     await prisma.purchase.create({ data: { vendorId: 'v-test', itemId: ids.rice, qtyGrams: 100_000, costPaisePerKg: 4000, date: today, invoiceNo: 'T1', createdById: 'test' } });
     const r = await api('ops').get(`/reports/register?period=day&from=${today}&to=${today}&shopId=${ids.s1}&itemId=${ids.rice}`);
     expect(r.status).toBe(200);
-    // S-001 sold 40 kg rice at ₹50 → ₹2,000 sales; cost 40 kg × ₹40 = ₹1,600; gross profit ₹400 (20%).
+    // Sales 40 kg → ₹2,000; cost 40 kg × ₹40.18 = ₹1,607.20; gross profit ₹392.80 (19.6%).
     expect(r.body.total.salesPaise).toBe(200_000);
-    expect(r.body.total.cogsPaise).toBe(160_000);
-    expect(r.body.total.grossProfitPaise).toBe(40_000);
-    expect(r.body.total.gpPct).toBe(20);
+    expect(r.body.total.cogsPaise).toBe(160_720);
+    expect(r.body.total.grossProfitPaise).toBe(39_280);
+    expect(r.body.total.gpPct).toBe(19.6);
     expect(r.body.total.salesQty).toBe(40_000);
-    expect(r.body.total.closingQty).toBe(60_000);
+    expect(r.body.total.inQty).toBe(110_000); // 100 kg received from HO + 10 kg bought
+    expect(r.body.total.closingQty).toBe(70_000);
   });
 
   it('issues raised offline are de-duplicated too', async () => {

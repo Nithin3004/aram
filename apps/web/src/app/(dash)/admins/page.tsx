@@ -7,6 +7,7 @@ import { useAuth } from '../../../lib/auth';
 import { useAction, useData } from '../../../lib/hooks';
 import { Avatar, Button, Card, Field, FormError, Input, Loading, Modal, PageHeader, Tag, THead, Toast, Toggle, TRow } from '../../../ui';
 import { ResetPasswordDialog } from '../../../components/PasswordDialogs';
+import { AdminPhoneDialog } from '../../../components/ShopDialogs';
 
 interface Admin { id: string; name: string; username: string; role: 'SUPER_ADMIN' | 'ADMIN'; isActive: boolean; permissions: Permission[]; phoneMasked: string }
 
@@ -20,6 +21,7 @@ export default function AdminsPage() {
   const act = useAction();
   const [creating, setCreating] = useState(false);
   const [resetting, setResetting] = useState<Admin | null>(null);
+  const [phoneFor, setPhoneFor] = useState<Admin | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const isSuper = me?.role === 'SUPER_ADMIN';
 
@@ -72,6 +74,7 @@ export default function AdminsPage() {
                     <span className="stack-sm" style={{ alignItems: 'flex-end', gap: 6 }}>
                       <Button variant="link" onClick={() => update(a, { isActive: !a.isActive })}>{a.isActive ? t('admin.disable') : t('admin.enable')}</Button>
                       <Button variant="link" onClick={() => setResetting(a)}>{t('auth.resetPassword')}</Button>
+                      <Button variant="link" onClick={() => setPhoneFor(a)}>{t('admin.editPhone')} · {a.phoneMasked}</Button>
                     </span>
                   )}
                 </span>
@@ -86,6 +89,17 @@ export default function AdminsPage() {
           onClose={() => setCreating(false)}
           onDone={() => {
             setCreating(false);
+            setToast(t('common.saved'));
+            void list.reload();
+          }}
+        />
+      )}
+      {phoneFor && (
+        <AdminPhoneDialog
+          admin={phoneFor}
+          onClose={() => setPhoneFor(null)}
+          onDone={() => {
+            setPhoneFor(null);
             setToast(t('common.saved'));
             void list.reload();
           }}

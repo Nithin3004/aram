@@ -45,6 +45,7 @@ export class ItemsController {
         pricePaisePerKg: current.get(i.id) ?? null,
         ...(ho && {
           networkGrams: net.get(i.id) ?? 0,
+          baseCostPaisePerKg: i.baseCostPaisePerKg,
           changedOn: lastApplied?.effectiveFrom ?? null,
           scheduled: scheduled ? { pricePaisePerKg: scheduled.pricePaisePerKg, effectiveFrom: scheduled.effectiveFrom } : null,
         }),

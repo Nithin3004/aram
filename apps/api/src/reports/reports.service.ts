@@ -65,22 +65,36 @@ export class ReportsService {
     const itemIds = items.map((i) => i.id);
     const itemFilter = q.itemId ? Prisma.sql`AND l."itemId" = ${q.itemId}` : Prisma.empty;
 
-    // ---- cost rate per item per month --------------------------------------------------------
+    // ---- cost rate per item per month (workbook Rate_Card) -------------------------------------
+    // = that month's average purchase rate across ALL shops and HO; carried forward when a month
+    // has no purchases; before any purchase, HO's opening cost rate or the average opening-stock rate.
     const purchases = await this.prisma.purchase.findMany({ where: { itemId: { in: itemIds } } });
+    const shopPurchases = await this.prisma.$queryRaw<{ itemId: string; shopId: string; d: string; g: bigint; amt: bigint }[]>`
+      SELECT cl."itemId", c."shopId", c."businessDate" AS d, SUM(cl."purchaseGrams")::bigint AS g, SUM(cl."purchasePaise")::bigint AS amt
+      FROM "ClosingLine" cl JOIN "DailyClosing" c ON c.id = cl."closingId"
+      WHERE cl."purchaseGrams" > 0 ${q.itemId ? Prisma.sql`AND cl."itemId" = ${q.itemId}` : Prisma.empty}
+      GROUP BY 1, 2, 3`;
     const monthAgg = new Map<string, { qty: number; amt: number }>(); // itemId|YYYY-MM
-    for (const p of purchases) {
-      const k = `${p.itemId}|${monthKey(p.date)}`;
+    const addAgg = (itemId: string, date: string, qty: number, amt: number) => {
+      const k = `${itemId}|${monthKey(date)}`;
       const a = monthAgg.get(k) ?? { qty: 0, amt: 0 };
-      a.qty += p.qtyGrams;
-      a.amt += lineValuePaise(p.qtyGrams, p.costPaisePerKg);
+      a.qty += qty;
+      a.amt += amt;
       monthAgg.set(k, a);
-    }
-    const firstMonth = monthKey([q.from, ...purchases.map((p) => p.date)].sort()[0]);
+    };
+    for (const p of purchases) addAgg(p.itemId, p.date, p.qtyGrams, lineValuePaise(p.qtyGrams, p.costPaisePerKg));
+    for (const p of shopPurchases) addAgg(p.itemId, p.d, Number(p.g), Number(p.amt));
+    const openingRates = await this.prisma.openingStock.groupBy({ by: ['itemId'], where: { itemId: { in: itemIds }, ratePaise: { not: null }, grams: { gt: 0 } }, _sum: { grams: true } });
+    const openingRows = await this.prisma.openingStock.findMany({ where: { itemId: { in: itemIds }, ratePaise: { not: null }, grams: { gt: 0 } } });
+    const openingAvg = new Map(
+      openingRates.map((o) => [o.itemId, Math.round(openingRows.filter((r) => r.itemId === o.itemId).reduce((a, r) => a + r.grams * (r.ratePaise ?? 0), 0) / (o._sum.grams || 1))]),
+    );
+    const firstMonth = monthKey([q.from, ...purchases.map((p) => p.date), ...shopPurchases.map((p) => p.d)].sort()[0]);
     const rateCache = new Map<string, number>();
     const costRate = (itemId: string, ym: string): number => {
       const key = `${itemId}|${ym}`;
       if (rateCache.has(key)) return rateCache.get(key)!;
-      let rate = items.find((i) => i.id === itemId)?.baseCostPaisePerKg ?? 0;
+      let rate = items.find((i) => i.id === itemId)?.baseCostPaisePerKg ?? openingAvg.get(itemId) ?? 0;
       for (let m = firstMonth; m <= ym; m = nextMonth(m)) {
         const a = monthAgg.get(`${itemId}|${m}`);
         if (a && a.qty > 0) rate = Math.round((a.amt * 1000) / a.qty);
@@ -108,7 +122,8 @@ export class ReportsService {
     // Opening quantity per item before `from`; then daily net change and inbound.
     const openQty = new Map<string, number>();
     const dayNet = new Map<string, Map<string, number>>(); // date -> item -> net grams
-    const dayIn = new Map<string, Map<string, number>>(); // date -> item -> inbound grams (valued at cost)
+    const dayIn = new Map<string, Map<string, number>>(); // date -> item -> inbound grams
+    const dayReceived = new Map<string, Map<string, number>>(); // date -> item -> received from HO (valued at cost rate)
     const bump = (m: Map<string, Map<string, number>>, d: string, item: string, g: number) => {
       if (!m.has(d)) m.set(d, new Map());
       m.get(d)!.set(item, (m.get(d)!.get(item) ?? 0) + g);
@@ -118,8 +133,9 @@ export class ReportsService {
       if (r.d < q.from) openQty.set(r.itemId, (openQty.get(r.itemId) ?? 0) + g);
       else if (r.d <= to) {
         bump(dayNet, r.d, r.itemId, g);
-        // Inbound: for the whole chain, goods bought from vendors; for a shop/supervisor, goods received.
-        if ((chain && r.type === 'PURCHASE') || (!chain && r.type === 'RECEIVE_IN')) bump(dayIn, r.d, r.itemId, g);
+        // Inbound: purchases (HO's and the shops' own) everywhere; for a shop/supervisor, also goods received from HO.
+        if (r.type === 'PURCHASE' || (!chain && r.type === 'RECEIVE_IN')) bump(dayIn, r.d, r.itemId, g);
+        if (!chain && r.type === 'RECEIVE_IN') bump(dayReceived, r.d, r.itemId, g);
       }
     }
     const daySales = new Map<string, Map<string, { sold: number; amt: number }>>();
@@ -128,9 +144,13 @@ export class ReportsService {
       if (!daySales.has(r.d)) daySales.set(r.d, new Map());
       daySales.get(r.d)!.set(r.itemId, { sold: Number(r.sold), amt: Number(r.amt) });
     }
-    // Chain purchases are valued at what was actually paid.
+    // Purchases are valued at what was actually paid: HO's vendor purchases (whole chain only, as they
+    // land in the HO warehouse) and the shops' own purchases within the selection.
     const dayPurchaseAmt = new Map<string, number>();
-    if (chain) for (const p of purchases) if (p.date >= q.from && p.date <= to) dayPurchaseAmt.set(p.date, (dayPurchaseAmt.get(p.date) ?? 0) + lineValuePaise(p.qtyGrams, p.costPaisePerKg));
+    const addAmt = (d: string, amt: number) => d >= q.from && d <= to && dayPurchaseAmt.set(d, (dayPurchaseAmt.get(d) ?? 0) + amt);
+    if (chain) for (const p of purchases) addAmt(p.date, lineValuePaise(p.qtyGrams, p.costPaisePerKg));
+    const inScope = new Set(shopIds);
+    for (const p of shopPurchases) if (inScope.has(p.shopId)) addAmt(p.d, Number(p.amt));
 
     // ---- walk day by day, then roll up into periods -------------------------------------------
     const days: string[] = [];
@@ -173,11 +193,9 @@ export class ReportsService {
         if (cur) rows.push(cur);
         cur = { key: k, label: periodLabel(k), openingValuePaise: valueOf(ym), inPaise: 0, salesPaise: 0, cogsPaise: 0, closingValuePaise: 0, openingQty: totalQty(), inQty: 0, salesQty: 0, closingQty: 0 };
       }
-      for (const [itemId, g] of dayIn.get(d) ?? []) {
-        cur.inQty += g;
-        if (!chain) cur.inPaise += lineValuePaise(g, costRate(itemId, ym));
-      }
-      if (chain) cur.inPaise += dayPurchaseAmt.get(d) ?? 0;
+      for (const [, g] of dayIn.get(d) ?? []) cur.inQty += g;
+      for (const [itemId, g] of dayReceived.get(d) ?? []) cur.inPaise += lineValuePaise(g, costRate(itemId, ym));
+      cur.inPaise += dayPurchaseAmt.get(d) ?? 0;
       for (const [itemId, s] of daySales.get(d) ?? []) {
         cur.salesQty += s.sold;
         cur.salesPaise += s.amt;

@@ -30,6 +30,7 @@ import { AdminController } from './admin/admin.controller';
 import { HealthController } from './health.controller';
 import { ReportsController } from './reports/reports.controller';
 import { ReportsService } from './reports/reports.service';
+import { OpeningStockController } from './closings/opening-stock.controller';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { ReportsService } from './reports/reports.service';
     DashboardController,
     AdminController,
     ReportsController,
+    OpeningStockController,
   ],
   providers: [
     PrismaService,

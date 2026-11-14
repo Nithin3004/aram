@@ -1,10 +1,14 @@
 # CLAUDE.md — Shop Network Stock & Sales System
 
 ## What this is
-A stock, dispatch and daily-sales system for a network of **380 shops**:
-- **1 Head Office (HO)** — central warehouse, full control, sees everything
-- **~10 Supervisor shops** — each supervises ~40 small shops; they warehouse AND sell
-- **~370 Small shops** — sell only, no warehousing
+A stock, purchase, sales and profit system for a grocery chain, replacing the HO workbook
+`Grocery_Chain_Sales_Stock_Profit new.xlsx` (the workbook's rules are the source of truth):
+- **1 Head Office (HO)** — full control, sees everything; can also hold warehouse stock and dispatch it
+- **10 Supervisors** (`SUP01`–`SUP10`) — each oversees **40 shops**; modelled as supervisor accounts that see their shops' stock
+- **400 Shops** (`S001`–`S400`) — buy, sell, and record their day
+
+Master data comes from the workbook (Shops, Supervisors, Products sheets): shop IDs, names and supervisor codes.
+Products today: Chana Dal, Toor Dal, Moong Dal, Urad Dal, Sugar (**kg**) and Oil (**litres**), up to 15.
 
 Two surfaces:
 - **Android app** — used by supervisor shops and small shops (one login per shop)
@@ -14,7 +18,7 @@ Bilingual: **English + Tamil** everywhere (UI, reports, notifications).
 - A **language switcher** is available on both the web dashboard and the Android app, including on the login screen.
 - Switching takes effect instantly, without reload or re-login.
 - The choice is saved per user (server-side) and per device (so it persists offline and before login).
-- Data entered by users (item names, notes) is stored once. Item names have an English and a Tamil field set by HO.
+- Data entered by users (item names, notes) is stored once. Shops, supervisors and products all have an English **and a Tamil** name, editable by HO. Where the workbook has no Tamil name, a Tamil one is filled in (e.g. "Shop 001" → "கடை 001", "Supervisor 1" → "மேற்பார்வையாளர் 1") and HO can change it.
 
 ---
 
@@ -22,10 +26,10 @@ Bilingual: **English + Tamil** everywhere (UI, reports, notifications).
 
 | Role | Sees | Can do |
 |---|---|---|
-| Super Admin (HO) | Everything | Create/disable admins, set each admin's permissions, everything below |
-| Admin (HO) | Everything | Only what Super Admin granted: approve requests, change prices, manage items, manage vendors/purchases, create dispatches/transfers, resolve issues, view-only |
-| Supervisor shop | Own stock + own sales; **stock only** (no sales) of its child shops | Receive stock, dispatch when HO orders, raise requests, raise issues, submit daily closing |
-| Small shop | Own stock + own sales | Receive stock, raise requests, raise issues, submit daily closing |
+| Super Admin (HO) | Everything | Create/disable admins, set each admin's permissions, edit shops (names EN/TA, phone, supervisor), reset passwords, everything below |
+| Admin (HO) | Everything | Only what Super Admin granted: approve requests, change prices, manage items, manage vendors/purchases, create dispatches/transfers (and enter opening stock), resolve issues, view-only |
+| Supervisor | Own stock + own entries; **stock only** (no sales) of its 40 shops | Receive stock, dispatch when HO orders, raise requests, raise issues, submit daily entry |
+| Shop | Own stock + own sales | Enter opening stock (once), submit daily entry (purchases + sales), receive stock, raise requests, raise issues |
 
 Permissions are checked on the **server** for every action. Never trust the client.
 
@@ -61,32 +65,45 @@ Statuses: `CREATED → DISPATCHED → RECEIVED → MATCHED` or `DISCREPANCY → 
 - Only admins with approve permission can act. Approval auto-creates a Dispatch.
 - Requests cannot be edited or deleted after submit. Flag shops with unusually frequent requests on the HO dashboard.
 
-### 5. Daily closing (every shop)
-Sales are NOT billed per customer (yet). At end of day each shop submits:
-- Closing stock per item (kg)
-- Cash collected
-- UPI collected
+### 5. Daily entry (every shop) — the workbook's Daily_Entry
+Sales are NOT billed per customer (yet). Each day each shop records, **per product**:
+- **Purchases**: loose quantity (kg/L) and/or the number of **½ kg/L and 1 kg/L packs**, with the **rate (₹ per kg/L)**. Optional price per pack if packs cost differently.
+- **Sales**: the same — loose and/or packs, with the **selling rate** the shop charged that day (optional pack prices). HO's product price is only the **suggested** rate, pre-filled; the shop may change it.
+- Cash collected and UPI collected.
 
 System computes:
-- **Sold qty** = opening + received today − closing (per item)
-- **Expected revenue** = sold qty × selling price on that date
-- **Variance** = (cash + UPI) − expected revenue → flagged if non-zero beyond a tolerance set by HO
-- Negative sold qty (closing > opening + received) → flagged
+- Packs → quantity: loose + ½ × packs + 1 × packs; amount = loose × rate + packs × (pack price, or size × rate).
+- **Closing qty** = opening + purchases − sales (+ received from HO − sent on transfers ± HO adjustments) per product. Shops do **not** count closing stock.
+- **Sales amount** = Σ sales qty × rate typed (or pack prices).
+- **Variance** = (cash + UPI) − sales amount → flagged beyond a tolerance set by HO (auto issue).
+- Closing qty below zero (sold more than held) → flagged (auto issue).
 
-Closing is **locked after submit**. Corrections only via HO-approved adjustment (logged). Next day's opening = previous closing. Can be entered offline and synced.
+Entry is **locked after submit**. Corrections only via HO-approved adjustment (logged). Next day's opening = previous closing. Can be entered offline and synced.
+
+### 5a. Opening stock (once per shop)
+- The workbook's Opening_Stock: quantity **and cost rate** per shop and product as on the start date.
+- Not imported: each shop enters it **once** on first use of the app (or HO enters it for any shop). After any daily entry it can only change via HO adjustment.
+- Phone numbers, opening stock and cost rates are filled in as people start using the system — never required at import.
+
+### 5b. Profit & registers (HO) — the workbook's reports
+- **Cost rate** per product per month = that month's average purchase rate (HO purchases and the shops' own purchases, all shops); months with no purchases carry the previous month forward; before any purchase, HO's opening cost rate or the average opening-stock rate (workbook Rate_Card).
+- **Cost of goods sold** = sales qty × cost rate. **Gross profit** = sales − COGS (rent, salaries, wastage excluded). GP %.
+- Daily / Monthly / Yearly registers (financial year 1-Apr to 31-Mar): opening stock ₹, purchases (+ received) ₹, sales ₹, COGS ₹, gross profit, GP %, closing stock ₹; quantities when one product is chosen. Filter by supervisor, shop, product. CSV export.
+- kg and litres are never added together as quantities.
 
 ### 6. Issues
 - Raised automatically (discrepancies, variances) or manually by any shop (damaged goods, transfer problems, etc.).
 - Statuses: `OPEN → RESOLVED` (resolution note required, HO only).
 
-### 7. Vendors & purchases (HO)
-- Add / edit / deactivate vendors.
-- Record purchases: vendor, item, qty (kg), cost per kg, date, invoice number → adds to HO warehouse stock.
+### 7. Vendors & purchases
+- HO: add / edit / deactivate vendors; record HO purchases (vendor, item, qty, cost per kg/L, date, invoice) → HO warehouse stock.
+- Shops also buy for themselves: recorded in the daily entry (qty + rate), adding to the shop's stock.
 
 ### 8. Items & prices (HO)
-- ~30 items now; HO can add/edit items. All quantities in **kg**.
+- Products from the workbook (up to 15); HO can add/edit. Each product has a **unit: kg or L** (oil). Quantities are stored as integer grams / millilitres.
 - Items with any history are **deactivated, never deleted** — hidden from shops, history intact.
-- **One selling price per item across all shops.** Prices are effective-dated; old prices kept so past sales compute correctly. Every change logged.
+- HO sets one **suggested selling price** per product (pre-fills the shops' daily entry). Effective-dated: a change applies from the next day; a product's first price applies from today. Old prices kept; every change logged.
+- HO may set an **opening cost rate** per product for profit before purchases exist.
 
 ### 9. Low-stock flags
 - For each shop/item: average daily sold (last 7 days) → days of stock left.
@@ -96,10 +113,10 @@ Closing is **locked after submit**. Corrections only via HO-approved adjustment 
 
 ## Non-negotiable rules
 - **Audit log is append-only.** Every create/approve/reject/dispatch/receive/resolve/price change/login records who, what, when, before/after. No edit, no delete, not even for Super Admin.
-- **Stock is a ledger.** Every movement (purchase, dispatch out, receive in, daily sold, adjustment) is a ledger entry. Current stock = sum of entries. Never overwrite a stock number. Corrections are reversing entries.
-- **Quantities stored as integer grams, money as integer paise.** No floats. Display in kg / ₹.
+- **Stock is a ledger.** Every movement (opening stock, purchase, dispatch out, receive in, daily sold, adjustment) is a ledger entry. Current stock = sum of entries. Never overwrite a stock number. Corrections are reversing entries.
+- **Quantities stored as integer grams (or millilitres), money as integer paise.** No floats. Display in kg / L / ₹.
 - Timestamps stored in UTC, displayed in IST.
-- Offline allowed for: daily closing, drafting requests, raising issues, viewing last-synced data. **Online required** for: receiving (code check), approvals, dispatch creation, price changes.
+- Offline allowed for: daily entry, drafting requests, raising issues, viewing last-synced data. **Online required** for: receiving (code check), opening stock, approvals, dispatch creation, price changes.
 - Offline submissions carry a client-generated ID so syncing twice never duplicates.
 
 ---
@@ -148,12 +165,12 @@ UI design comes from **Claude Design** and lives in `/design` (exports + screens
 2. Master data: shop hierarchy, items, prices, vendors, purchases
 3. Stock ledger + dispatch lifecycle + code/QR + photo + match check + auto issues
 4. Requests & approvals, HO-ordered transfers
-5. Daily closing + variance calculation
+5. Daily entry (purchases + sales, packs) + variance calculation; opening stock; profit registers
 6. HO dashboard: stock per shop, sales per shop, variances, pending requests, open issues, low-stock flags, request-frequency flags
 7. Android app with offline + sync
 8. Tamil translations complete, polish, reports export
 
-Finish and test each step before moving on. Write tests for: match check, sold-qty calculation, variance, permissions, offline sync de-duplication.
+Finish and test each step before moving on. Write tests for: match check, pack conversion and closing-qty calculation, variance, cost of goods / gross profit, permissions, offline sync de-duplication.
 
 ---
 

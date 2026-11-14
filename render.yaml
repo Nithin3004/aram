@@ -18,6 +18,7 @@ services:
       npx prisma generate &&
       node scripts/db-env.cjs npx prisma migrate deploy &&
       node scripts/db-env.cjs npx ts-node --transpile-only prisma/import.ts ../../data-import/live --if-empty &&
+      node scripts/db-env.cjs npx ts-node --transpile-only prisma/backfill-tamil.ts &&
       npx nest build
     startCommand: cd apps/api && node dist/main.js
     healthCheckPath: /api/health

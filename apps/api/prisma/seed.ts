@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 /**
  * Preview seed: a realistic 380-shop network with a week of history.
- * History is simulated with the same shared rules the API uses (computeClosing,
+ * History is simulated with the same shared rules the API uses (computeDailyEntry,
  * matchCheck) and written straight to the DB; live scenarios are left open so
  * every flow can be clicked through.
  *
@@ -10,7 +10,7 @@
 import '../src/env';
 import { Prisma, PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
-import { addDays, businessDate, computeClosing, istTimeOn, lineValuePaise } from '@aram/shared';
+import { addDays, businessDate, computeDailyEntry, istTimeOn, lineValuePaise } from '@aram/shared';
 
 const prisma = new PrismaClient();
 
@@ -289,7 +289,7 @@ async function main() {
 
   for (let off = -7; off <= 0; off++) {
     const closingRows: Prisma.DailyClosingCreateManyInput[] = [];
-    const perClosingLines: { clientId: string; shop: SimShop; lines: ReturnType<typeof computeClosing>['lines']; capturedAt: Date }[] = [];
+    const perClosingLines: { clientId: string; shop: SimShop; lines: ReturnType<typeof computeDailyEntry>['lines']; capturedAt: Date }[] = [];
     for (const s of sims) {
       if (skipped.has(s.code) && off >= -2) continue;
       if (off === 0 && keepOpenToday.has(s.code)) continue;
@@ -311,15 +311,16 @@ async function main() {
         const boost = itemId === sugar.id && s.code <= 'S-010' ? 1.6 : 1;
         const want = roundTo(s.rate.get(itemId)! * 1000 * between(0.75, 1.25) * boost * (prev ? 1 : 0.6), 250);
         const sold = Math.min(onHand, want);
-        return { itemId, openingGrams: opening, receivedGrams: received, sentOutGrams: sentOut, adjustmentGrams: 0, closingGrams: onHand - sold, pricePaisePerKg: price.get(itemId)! };
+        // Sales typed as loose qty at HO's price (the preview shops do not buy for themselves).
+        return { itemId, openingGrams: opening, receivedGrams: received, sentOutGrams: sentOut, adjustmentGrams: 0, purchase: { looseGrams: 0, halfPacks: 0, onePacks: 0, ratePaise: 0 }, sales: { looseGrams: sold, halfPacks: 0, onePacks: 0, ratePaise: price.get(itemId)! } };
       });
-      const expected = lines.reduce((a, l) => a + lineValuePaise(l.openingGrams + l.receivedGrams - l.sentOutGrams - l.closingGrams, l.pricePaisePerKg), 0);
+      const expected = lines.reduce((a, l) => a + lineValuePaise(l.sales.looseGrams, l.sales.ratePaise), 0);
       // Mostly exact or a few rupees off; ~1.5% of closings short beyond tolerance, ~0.5% over.
       const r = rand();
       const gap = r < 0.015 ? -Math.round(between(150, 2400)) * 100 : r < 0.02 ? Math.round(between(150, 600)) * 100 : r < 0.2 ? -Math.round(between(0, 90)) * 100 : 0;
       const collected = Math.max(0, expected + gap);
       const cash = Math.round((collected * between(0.5, 0.7)) / 100) * 100;
-      const result = computeClosing({ lines, cashPaise: cash, upiPaise: collected - cash, varianceTolerancePaise: tolerance });
+      const result = computeDailyEntry({ lines, cashPaise: cash, upiPaise: collected - cash, varianceTolerancePaise: tolerance });
       const clientId = `seed:${s.code}:${day(off)}`;
       closingRows.push({
         clientId,
@@ -328,7 +329,7 @@ async function main() {
         capturedAt,
         cashPaise: cash,
         upiPaise: collected - cash,
-        expectedRevenuePaise: result.expectedRevenuePaise,
+        expectedRevenuePaise: result.salesPaise,
         variancePaise: result.variancePaise,
         varianceFlagged: result.varianceFlagged,
         submittedById: karthik.id, // replaced below with the shop user id
@@ -346,9 +347,9 @@ async function main() {
     for (const p of perClosingLines) {
       const c = idByClient.get(p.clientId)!;
       for (const l of p.lines) {
-        closingLineRows.push({ closingId: c.id, itemId: l.itemId, openingGrams: l.openingGrams, receivedGrams: l.receivedGrams, sentOutGrams: l.sentOutGrams, adjustmentGrams: 0, closingGrams: l.closingGrams, soldGrams: l.soldGrams, pricePaisePerKg: l.pricePaisePerKg, expectedPaise: l.expectedPaise });
-        if (l.soldGrams) {
-          const e = { shopId: p.shop.id, itemId: l.itemId, qtyGrams: -l.soldGrams, type: 'SOLD' as const, refType: 'DailyClosing', refId: c.id, effectiveAt: p.capturedAt, createdById: userByShop.get(p.shop.id) };
+        closingLineRows.push({ closingId: c.id, itemId: l.itemId, openingGrams: l.openingGrams, receivedGrams: l.receivedGrams, sentOutGrams: l.sentOutGrams, adjustmentGrams: 0, closingGrams: l.closingGrams, soldGrams: l.salesGrams, pricePaisePerKg: l.sales.ratePaise, expectedPaise: l.salesPaise });
+        if (l.salesGrams) {
+          const e = { shopId: p.shop.id, itemId: l.itemId, qtyGrams: -l.salesGrams, type: 'SOLD' as const, refType: 'DailyClosing', refId: c.id, effectiveAt: p.capturedAt, createdById: userByShop.get(p.shop.id) };
           ledger.push(e);
           idx.get(p.shop.id)!.push(e);
         }

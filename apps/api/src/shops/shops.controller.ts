@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { z } from 'zod';
-import { businessDate, createShopSchema, lowStock } from '@aram/shared';
+import { businessDate, createShopSchema, lowStock, updateShopSchema } from '@aram/shared';
 import { PrismaService } from '../prisma.service';
 import { AuthUser, CurrentUser, isHo, Roles } from '../common/auth-user';
 import { ZodPipe } from '../common/zod.pipe';
@@ -78,7 +78,7 @@ export class ShopsController {
   @Get(':id')
   async detail(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     await this.access.assertStock(user, id);
-    const shop = await this.prisma.shop.findUnique({ where: { id }, include: { parent: true } });
+    const shop = await this.prisma.shop.findUnique({ where: { id }, include: { parent: true, users: { select: { phone: true }, take: 1 } } });
     if (!shop) throw notFound('Shop');
     const [bal, sold, items, st] = await Promise.all([
       this.ledger.balances(id),
@@ -144,6 +144,8 @@ export class ShopsController {
       type: shop.type,
       parent: shop.parent && { id: shop.parent.id, code: shop.parent.code, nameEn: shop.parent.nameEn, nameTa: shop.parent.nameTa },
       totalGrams: [...bal.values()].reduce((a, b) => a + b, 0),
+      phone: isHo(user) ? shop.users[0]?.phone ?? '' : undefined,
+      openingStockSet: (await this.prisma.openingStock.count({ where: { shopId: id } })) > 0,
       stock,
       sales,
     };
@@ -191,6 +193,41 @@ export class ShopsController {
       return shop;
     });
     return shop;
+  }
+
+  /** Super Admin edits a shop's names, login phone (for OTP) and supervisor. */
+  @Patch(':id')
+  @Roles('SUPER_ADMIN')
+  async update(@CurrentUser() user: AuthUser, @Param('id') id: string, @Body(new ZodPipe(updateShopSchema)) body: z.infer<typeof updateShopSchema>) {
+    const shop = await this.prisma.shop.findUnique({ where: { id }, include: { users: true } });
+    if (!shop) throw notFound('Shop');
+    if (body.parentId !== undefined) {
+      if (shop.type !== 'SMALL') throw badRequest('shop.badParent', 'Only small shops have a supervisor');
+      const p = await this.prisma.shop.findUnique({ where: { id: body.parentId } });
+      if (!p || p.type !== 'SUPERVISOR') throw badRequest('shop.badParent', 'Parent must be a supervisor shop');
+    }
+    const login = shop.users[0];
+    return this.prisma.$transaction(async (tx) => {
+      const after = await tx.shop.update({
+        where: { id },
+        data: { nameEn: body.nameEn, nameTa: body.nameTa, parentId: body.parentId },
+      });
+      // The phone belongs to the shop: every login of this shop gets it (normally there is one).
+      if (body.phone !== undefined) await tx.user.updateMany({ where: { shopId: id, role: 'SHOP' }, data: { phone: body.phone } });
+      await this.audit.log(
+        {
+          actor: user,
+          action: 'SHOP_UPDATE',
+          entityType: 'Shop',
+          entityId: id,
+          summary: `Updated shop ${shop.code}: ${Object.keys(body).join(', ')}`,
+          before: { nameEn: shop.nameEn, nameTa: shop.nameTa, parentId: shop.parentId, phone: login?.phone ?? null },
+          after: { nameEn: after.nameEn, nameTa: after.nameTa, parentId: after.parentId, phone: body.phone ?? login?.phone ?? null },
+        },
+        tx,
+      );
+      return after;
+    });
   }
 
   @Get(':id/ledger')
