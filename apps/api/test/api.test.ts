@@ -16,6 +16,8 @@ import { businessDate } from '@aram/shared';
 const SCHEMA = `test_${Date.now()}`;
 const TEST_DB = `postgresql://aram:aram@localhost:5433/aram?schema=${SCHEMA}`;
 process.env.DATABASE_URL = TEST_DB;
+// Pin DB_SCHEMA too, so a DB_SCHEMA in .env (e.g. live data) can never redirect the tests.
+process.env.DB_SCHEMA = SCHEMA;
 process.env.JWT_SECRET = 'test-secret';
 process.env.NODE_ENV = 'test';
 process.env.SMS_PROVIDER = 'console';
