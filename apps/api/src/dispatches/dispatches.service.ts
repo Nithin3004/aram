@@ -354,6 +354,7 @@ export class DispatchesService {
           itemId: l.itemId,
           nameEn: it.nameEn,
           nameTa: it.nameTa,
+          unit: it.unit,
           orderedGrams: ho || isSender ? l.orderedGrams : undefined,
           sentGrams: l.sentGrams,
           receivedGrams: ho || isReceiver ? l.receivedGrams : undefined,

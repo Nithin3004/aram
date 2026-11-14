@@ -20,7 +20,7 @@ interface Req {
   avgDailySoldGrams: number;
   frequentCount: number | null;
   dispatch: { ref: string; status: string } | null;
-  lines: { itemId: string; nameEn: string; nameTa: string; requestedGrams: number; approvedGrams: number | null; onHandGrams: number }[];
+  lines: { itemId: string; nameEn: string; nameTa: string; unit?: string; requestedGrams: number; approvedGrams: number | null; onHandGrams: number }[];
 }
 
 export default function RequestsPage() {
@@ -66,7 +66,7 @@ export default function RequestsPage() {
                     {name(l)}
                     <span className="kg">
                       {r.status === 'APPROVED' && l.approvedGrams !== l.requestedGrams ? `${formatKg(l.approvedGrams ?? 0)}/` : ''}
-                      {formatKg(l.requestedGrams)}{t('common.kg')}
+                      {formatKg(l.requestedGrams)} {t(`unit.${l.unit ?? 'kg'}`)}
                     </span>
                   </span>
                 ))}
@@ -151,10 +151,10 @@ function PartialModal({ r, onClose, onDone }: { r: Req; onClose: () => void; onD
         <div key={l.itemId} className="row" style={{ flexWrap: 'nowrap' }}>
           <span style={{ flex: 1 }}>
             <span className="cell-main">{name(l)}</span>
-            <span className="cell-sub mono">{t('request.requested')} {formatKg(l.requestedGrams)} {t('common.kg')}</span>
+            <span className="cell-sub mono">{t('request.requested')} {formatKg(l.requestedGrams)} {t(`unit.${l.unit ?? 'kg'}`)}</span>
           </span>
           <Input numeric inputMode="decimal" style={{ width: 120 }} value={qty[l.itemId]} onChange={(e) => setQty({ ...qty, [l.itemId]: e.target.value })} />
-          <span className="small t-subtle">{t('common.kg')}</span>
+          <span className="small t-subtle">{t(`unit.${l.unit ?? 'kg'}`)}</span>
         </div>
       ))}
       <FormError>{act.error}</FormError>

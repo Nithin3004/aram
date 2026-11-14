@@ -97,6 +97,7 @@ export class ShopsController {
           code: i.code,
           nameEn: i.nameEn,
           nameTa: i.nameTa,
+          unit: i.unit,
           onHandGrams: onHand,
           avgDailySoldGrams: ls.avgDailySoldGrams,
           daysLeft: ls.daysLeft,

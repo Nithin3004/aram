@@ -73,7 +73,7 @@ export default function RequestStock() {
             </View>
             {on && (
               <Pressable onPress={(e) => e.stopPropagation?.()}>
-                <NumberField width={104} value={qty[it.id] ?? ''} onChangeText={(v) => setQty({ ...qty, [it.id]: v })} unit={t('common.kg')} highlight autoFocus />
+                <NumberField width={104} value={qty[it.id] ?? ''} onChangeText={(v) => setQty({ ...qty, [it.id]: v })} unit={t(`unit.${it.unit ?? 'kg'}`)} highlight autoFocus />
               </Pressable>
             )}
           </Row>

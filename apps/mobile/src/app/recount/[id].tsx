@@ -67,7 +67,7 @@ export default function Recount() {
             <Txt size={17} weight={600}>{nameIn(l)}</Txt>
             <Txt mono size={13} color={colors.textSubtle}>{t('receive.sent')} {formatKg(l.sentGrams ?? 0)}</Txt>
           </View>
-          <Stepper value={qty[l.itemId] ?? ''} onChange={(v) => setQty({ ...qty, [l.itemId]: v })} step={1} unit={t('common.kg')} />
+          <Stepper value={qty[l.itemId] ?? ''} onChange={(v) => setQty({ ...qty, [l.itemId]: v })} step={1} unit={t(`unit.${l.unit ?? 'kg'}`)} />
         </Row>
       ))}
       <View style={{ padding: 16 }}>

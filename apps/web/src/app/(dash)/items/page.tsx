@@ -5,13 +5,14 @@ import { addDays, businessDate, formatIstDate, formatKg, rupeesToPaise } from '@
 import { api } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth';
 import { useAction, useData, useLocalName } from '../../../lib/hooks';
-import { Button, Card, Empty, Field, FormError, Input, Loading, Modal, PageHeader, THead, Toast, TRow } from '../../../ui';
+import { Button, Card, Empty, Field, FormError, Input, Loading, Modal, PageHeader, Select, THead, Toast, TRow } from '../../../ui';
 
 interface Item {
   id: string;
   code: string;
   nameEn: string;
   nameTa: string;
+  unit: 'kg' | 'L';
   isActive: boolean;
   pricePaisePerKg: number | null;
   networkGrams: number;
@@ -61,7 +62,7 @@ export default function ItemsPage() {
               <TRow key={i.id} cols={COLS} selected={sel === i.id} onClick={() => setSel(i.id)} minWidth={520}>
                 <span style={{ minWidth: 0, opacity: i.isActive ? 1 : 0.55 }}>
                   <span className="cell-main ellipsis">{name(i)}</span>
-                  <span className="cell-sub mono">{i.code}</span>
+                  <span className="cell-sub mono">{i.code} · {t(`unit.${i.unit}`)}</span>
                 </span>
                 <span className="cell-num" style={{ fontSize: 13 }}>
                   {i.pricePaisePerKg != null ? rs(i.pricePaisePerKg) : '—'}
@@ -133,7 +134,7 @@ function ItemDetail({ item, onChanged }: { item: Item; onChanged: (msg: string) 
       {can('CHANGE_PRICES') && (
         <>
           <div className="row" style={{ alignItems: 'flex-end', flexWrap: 'nowrap', marginTop: 8 }}>
-            <Field label={t('items.sellingPrice')}>
+            <Field label={t('items.sellingPrice', { unit: t(`unit.${item.unit}`) })}>
               <Input big inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value)} />
             </Field>
             <Button variant="primary" disabled={act.busy || !Number(price)} onClick={updatePrice} style={{ padding: '12px 14px' }}>
@@ -179,10 +180,10 @@ function ItemDetail({ item, onChanged }: { item: Item; onChanged: (msg: string) 
 function AddItem({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
   const { t } = useTranslation();
   const act = useAction();
-  const [f, setF] = useState({ code: '', nameEn: '', nameTa: '', price: '' });
+  const [f, setF] = useState({ code: '', nameEn: '', nameTa: '', unit: 'kg', price: '' });
   const save = () =>
     void act.run(async () => {
-      await api('/items', { body: { code: f.code, nameEn: f.nameEn, nameTa: f.nameTa, pricePaisePerKg: rupeesToPaise(f.price) } });
+      await api('/items', { body: { code: f.code, nameEn: f.nameEn, nameTa: f.nameTa, unit: f.unit, pricePaisePerKg: rupeesToPaise(f.price) } });
       onDone();
     });
   return (
@@ -199,6 +200,12 @@ function AddItem({ onClose, onDone }: { onClose: () => void; onDone: () => void 
       <span className="notice-plain" style={{ alignSelf: 'flex-start' }}>{t('common.notDesigned')}</span>
       <div className="form-grid">
         <Field label={t('items.code')}><Input value={f.code} placeholder="ITM-31" onChange={(e) => setF({ ...f, code: e.target.value })} /></Field>
+        <Field label={t('items.unit')}>
+          <Select value={f.unit} onChange={(e) => setF({ ...f, unit: e.target.value })}>
+            <option value="kg">{t('unit.kg')}</option>
+            <option value="L">{t('unit.L')}</option>
+          </Select>
+        </Field>
         <Field label={t('items.startPrice')}><Input inputMode="decimal" value={f.price} onChange={(e) => setF({ ...f, price: e.target.value })} /></Field>
         <Field label={t('items.nameEn')}><Input value={f.nameEn} onChange={(e) => setF({ ...f, nameEn: e.target.value })} /></Field>
         <Field label={t('items.nameTa')}><Input lang="ta" value={f.nameTa} onChange={(e) => setF({ ...f, nameTa: e.target.value })} /></Field>

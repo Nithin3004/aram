@@ -8,7 +8,7 @@ import { useAction, useData, useLocalName } from '../../../lib/hooks';
 import { Button, Card, CardHead, Empty, Field, FormError, Input, Loading, Modal, PageHeader, Select, THead, Toast, TRow } from '../../../ui';
 
 interface Vendor { id: string; nameEn: string; nameTa: string; phone: string; supplies: string; isActive: boolean; monthPaise: number }
-interface Purchase { id: string; date: string; invoiceNo: string; vendor: { nameEn: string; nameTa: string }; item: { nameEn: string; nameTa: string }; qtyGrams: number; costPaisePerKg: number; totalPaise: number }
+interface Purchase { id: string; date: string; invoiceNo: string; vendor: { nameEn: string; nameTa: string }; item: { nameEn: string; nameTa: string; unit?: string }; qtyGrams: number; costPaisePerKg: number; totalPaise: number }
 interface Item { id: string; nameEn: string; nameTa: string; isActive: boolean }
 
 const COLS = '96px minmax(0,1fr) 110px 80px 90px';
@@ -64,7 +64,7 @@ export default function VendorsPage() {
                   <span className="cell-main ellipsis">{name(p.item)}</span>
                   <span className="cell-sub ellipsis">{name(p.vendor)} · <span className="mono">{p.invoiceNo}</span></span>
                 </span>
-                <span className="cell-num">{formatKg(p.qtyGrams)} {t('common.kg')}</span>
+                <span className="cell-num">{formatKg(p.qtyGrams)} {t(`unit.${p.item.unit ?? 'kg'}`)}</span>
                 <span className="cell-num-light">{(p.costPaisePerKg / 100).toFixed(2)}</span>
                 <span className="cell-num">{formatRupeesCompact(p.totalPaise)}</span>
               </TRow>

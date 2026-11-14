@@ -83,6 +83,13 @@ function readTable(dir: string, file: string, required: string[]): Row[] {
 
 const err = (file: string, r: Row, msg: string) => errors.push(`${file} line ${r.__line}: ${msg}`);
 const USERNAME = /^[a-z0-9._-]{3,64}$/;
+/** "kg" | "L" from what people type in Excel (kg, Kg, L, Litre, Ltr…). */
+const unitOf = (u: string): 'kg' | 'L' | null => {
+  const x = u.trim().toLowerCase();
+  if (x === 'kg' || x === 'kgs' || x === 'kilo') return 'kg';
+  if (['l', 'ltr', 'litre', 'liter', 'litres', 'liters'].includes(x)) return 'L';
+  return null;
+};
 const PHONE = /^\d{10}$/;
 
 async function main() {
@@ -91,14 +98,16 @@ async function main() {
     console.error('Usage: pnpm --filter @aram/api import <folder-with-csv-files>');
     process.exit(1);
   }
-  const adminPw = process.env.IMPORT_ADMIN_PASSWORD ?? '';
-  const shopPw = process.env.IMPORT_SHOP_PASSWORD ?? '';
+  const ifEmpty = process.argv.includes('--if-empty');
+  // Starting passwords: IMPORT_* if given, else the SEED_* ones already set on the host.
+  const adminPw = process.env.IMPORT_ADMIN_PASSWORD || process.env.SEED_ADMIN_PASSWORD || '';
+  const shopPw = process.env.IMPORT_SHOP_PASSWORD || process.env.SEED_SHOP_PASSWORD || '';
   if (adminPw.length < 8) errors.push('IMPORT_ADMIN_PASSWORD must be set (at least 8 characters)');
   if (shopPw.length < 8) errors.push('IMPORT_SHOP_PASSWORD must be set (at least 8 characters)');
 
   const admins = readTable(dir, 'admins.csv', ['username', 'name', 'phone', 'role', 'permissions']);
   const shops = readTable(dir, 'shops.csv', ['code', 'type', 'name_en', 'name_ta', 'supervisor_code', 'username', 'phone']);
-  const items = readTable(dir, 'items.csv', ['code', 'name_en', 'name_ta', 'price_per_kg']);
+  const items = readTable(dir, 'items.csv', ['code', 'name_en', 'name_ta', 'unit', 'price_per_kg']);
   const vendors = readTable(dir, 'vendors.csv', ['name_en', 'name_ta', 'phone', 'supplies']);
   const stock = readTable(dir, 'opening_stock.csv', ['shop_code', 'item_code', 'kg']);
 
@@ -114,7 +123,7 @@ async function main() {
   for (const a of admins) {
     takeUsername('admins.csv', a, a.username.toLowerCase());
     if (!a.name) err('admins.csv', a, 'name is empty');
-    if (!PHONE.test(a.phone)) err('admins.csv', a, `phone "${a.phone}" must be 10 digits`);
+    if (a.phone && !PHONE.test(a.phone)) err('admins.csv', a, `phone "${a.phone}" must be 10 digits (or empty)`);
     const role = a.role.toUpperCase();
     if (role !== 'SUPER_ADMIN' && role !== 'ADMIN') err('admins.csv', a, `role "${a.role}" must be SUPER_ADMIN or ADMIN`);
     if (role === 'SUPER_ADMIN') superAdmins++;
@@ -133,8 +142,8 @@ async function main() {
     const type = s.type.toUpperCase();
     if (type !== 'SUPERVISOR' && type !== 'SMALL') err('shops.csv', s, `type "${s.type}" must be SUPERVISOR or SMALL`);
     if (!s.name_en) err('shops.csv', s, 'name_en is empty');
-    if (!s.name_ta) err('shops.csv', s, 'name_ta (Tamil name) is empty');
-    if (!PHONE.test(s.phone)) err('shops.csv', s, `phone "${s.phone}" must be 10 digits`);
+    // Tamil name and phone may be left empty (English name is shown; HO can add them later).
+    if (s.phone && !PHONE.test(s.phone)) err('shops.csv', s, `phone "${s.phone}" must be 10 digits (or empty)`);
     takeUsername('shops.csv', s, s.username.toLowerCase());
   }
   for (const s of shops) {
@@ -164,8 +173,9 @@ async function main() {
     else if (itemCodes.has(code)) err('items.csv', it, `item code "${code}" is used twice`);
     itemCodes.set(code, it);
     if (!it.name_en) err('items.csv', it, 'name_en is empty');
-    if (!it.name_ta) err('items.csv', it, 'name_ta (Tamil name) is empty');
-    parseNum('items.csv', it, 'price_per_kg', rupeesToPaise);
+    if (!unitOf(it.unit)) err('items.csv', it, `unit "${it.unit}" must be kg or L`);
+    // Price may be left empty: HO then sets it on Items & prices (the first price applies from that day).
+    if (it.price_per_kg) parseNum('items.csv', it, 'price_per_kg', rupeesToPaise);
   }
   for (const v of vendors) if (!v.name_en) err('vendors.csv', v, 'name_en is empty');
 
@@ -177,12 +187,20 @@ async function main() {
     if (!itemCodes.has(item)) err('opening_stock.csv', r, `item_code "${r.item_code}" is not in items.csv`);
     if (stockKeys.has(`${shop}|${item}`)) err('opening_stock.csv', r, `${shop} / ${item} appears twice`);
     stockKeys.add(`${shop}|${item}`);
-    if (r.kg !== '0') parseNum('opening_stock.csv', r, 'kg', kgToGrams);
+    if (r.kg && r.kg !== '0') parseNum('opening_stock.csv', r, 'kg', kgToGrams);
+    if (r.rate) parseNum('opening_stock.csv', r, 'rate', rupeesToPaise);
   }
 
   const prisma = new PrismaClient();
   try {
-    if (await prisma.shop.count()) errors.push('The database already has shops. Import only runs on an empty database.');
+    if (await prisma.shop.count()) {
+      // --if-empty (used by the deploy build): an already-loaded database is left alone.
+      if (ifEmpty) {
+        console.log('Database already has data — import skipped.');
+        return;
+      }
+      errors.push('The database already has shops. Import only runs on an empty database.');
+    }
     if (errors.length) {
       console.error(`\nNothing was imported. Fix these ${errors.length} problem(s) and run again:\n`);
       for (const e of errors) console.error('  • ' + e);
@@ -243,18 +261,33 @@ async function main() {
           })),
         });
 
+        // Opening rates give each product a starting cost for profit (average weighted by quantity).
+        const baseCost = new Map<string, number>();
+        for (const it of items) {
+          const rows = stock.filter((r) => r.item_code.toUpperCase() === it.code.toUpperCase() && r.rate && r.kg && r.kg !== '0');
+          const qty = rows.reduce((a, r) => a + kgToGrams(r.kg), 0);
+          if (qty > 0) {
+            const value = rows.reduce((a, r) => a + kgToGrams(r.kg) * rupeesToPaise(r.rate), 0);
+            baseCost.set(it.code.toUpperCase(), Math.round(value / qty));
+          }
+        }
         const itemIds = new Map<string, string>();
         for (const [i, it] of items.entries()) {
-          const created = await tx.item.create({ data: { code: it.code.toUpperCase(), nameEn: it.name_en, nameTa: it.name_ta, sortOrder: i + 1 } });
+          const code = it.code.toUpperCase();
+          const created = await tx.item.create({
+            data: { code, nameEn: it.name_en, nameTa: it.name_ta, unit: unitOf(it.unit)!, sortOrder: i + 1, baseCostPaisePerKg: baseCost.get(code) ?? null },
+          });
           itemIds.set(created.code, created.id);
-          await tx.itemPrice.create({ data: { itemId: created.id, pricePaisePerKg: rupeesToPaise(it.price_per_kg), effectiveFrom: today } });
+          if (it.price_per_kg) {
+            await tx.itemPrice.create({ data: { itemId: created.id, pricePaisePerKg: rupeesToPaise(it.price_per_kg), effectiveFrom: today } });
+          }
         }
         if (vendors.length) {
           await tx.vendor.createMany({ data: vendors.map((v) => ({ nameEn: v.name_en, nameTa: v.name_ta, phone: v.phone, supplies: v.supplies })) });
         }
         // Opening stock is the first ledger entry for each shop/item.
         const ledger = stock
-          .filter((r) => r.kg !== '0')
+          .filter((r) => r.kg && r.kg !== '0')
           .map((r) => ({
             shopId: ids.get(r.shop_code.toUpperCase())!,
             itemId: itemIds.get(r.item_code.toUpperCase())!,

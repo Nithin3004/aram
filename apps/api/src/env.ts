@@ -11,3 +11,10 @@ try {
 } catch {
   /* no .env */
 }
+
+// DB_SCHEMA (e.g. "live") selects which Postgres schema holds the data; same as scripts/db-env.cjs.
+if (process.env.DATABASE_URL && process.env.DB_SCHEMA) {
+  const u = new URL(process.env.DATABASE_URL);
+  u.searchParams.set('schema', process.env.DB_SCHEMA);
+  process.env.DATABASE_URL = u.toString();
+}

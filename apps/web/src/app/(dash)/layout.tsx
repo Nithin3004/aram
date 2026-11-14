@@ -18,7 +18,7 @@ interface NavCounts {
 }
 
 const GROUPS: { group: string; links: { href: string; key: string; badge?: keyof NavCounts; tone?: 'danger' | 'warn'; superOnly?: boolean }[] }[] = [
-  { group: 'nav.network', links: [{ href: '/', key: 'nav.overview' }, { href: '/shops', key: 'nav.shops' }] },
+  { group: 'nav.network', links: [{ href: '/', key: 'nav.overview' }, { href: '/shops', key: 'nav.shops' }, { href: '/reports', key: 'nav.reports' }] },
   {
     group: 'nav.stockMovement',
     links: [

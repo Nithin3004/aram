@@ -137,6 +137,10 @@ model Item {
   nameTa    String
   isActive  Boolean     @default(true)
   sortOrder Int         @default(0)
+  /// "kg" or "L". Quantities are stored as integer grams / millilitres either way.
+  unit      String      @default("kg")
+  /// Cost per unit used before any purchase exists (from opening stock rates), in paise.
+  baseCostPaisePerKg Int?
   createdAt DateTime    @default(now())
   prices    ItemPrice[]
 }

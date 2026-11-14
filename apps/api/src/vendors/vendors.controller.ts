@@ -63,7 +63,7 @@ export class VendorsController {
       date: p.date,
       invoiceNo: p.invoiceNo,
       vendor: { id: p.vendor.id, nameEn: p.vendor.nameEn, nameTa: p.vendor.nameTa },
-      item: { id: p.itemId, nameEn: byId.get(p.itemId)?.nameEn, nameTa: byId.get(p.itemId)?.nameTa },
+      item: { id: p.itemId, nameEn: byId.get(p.itemId)?.nameEn, nameTa: byId.get(p.itemId)?.nameTa, unit: byId.get(p.itemId)?.unit ?? 'kg' },
       qtyGrams: p.qtyGrams,
       costPaisePerKg: p.costPaisePerKg,
       totalPaise: lineValuePaise(p.qtyGrams, p.costPaisePerKg),

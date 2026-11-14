@@ -77,6 +77,7 @@ export class ClosingsService {
             itemId: i.id,
             nameEn: i.nameEn,
             nameTa: i.nameTa,
+            unit: i.unit,
             openingGrams: r.openingGrams,
             receivedGrams: r.receivedGrams,
             sentOutGrams: r.sentOutGrams,

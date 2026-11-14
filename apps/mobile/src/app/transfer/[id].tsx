@@ -63,7 +63,7 @@ export default function ConfirmTransfer() {
             <Txt size={17} weight={600}>{nameIn(l)}</Txt>
             <Txt mono size={14} color={colors.textSubtle}>{t('dispatch.ordered')} {formatKg(l.orderedGrams ?? 0)}</Txt>
           </View>
-          <Stepper value={qty[l.itemId] ?? ''} onChange={(v) => setQty({ ...qty, [l.itemId]: v })} step={5} unit={t('common.kg')} />
+          <Stepper value={qty[l.itemId] ?? ''} onChange={(v) => setQty({ ...qty, [l.itemId]: v })} step={5} unit={t(`unit.${l.unit ?? 'kg'}`)} />
         </Row>
       ))}
     </Screen>

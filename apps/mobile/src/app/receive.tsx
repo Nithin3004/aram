@@ -137,15 +137,15 @@ export default function Receive() {
                   <Txt size={17} weight={600} style={{ flex: 1 }}>{nameIn(l)}</Txt>
                   <View style={{ alignItems: 'flex-end' }}>
                     <Txt mono size={11} color={colors.textSubtle}>{t('receive.sent')}</Txt>
-                    <Txt mono size={16} weight={600}>{formatKg(l.sentGrams ?? 0)} {t('common.kg')}</Txt>
+                    <Txt mono size={16} weight={600}>{formatKg(l.sentGrams ?? 0)} </Txt>
                   </View>
                 </View>
-                <Stepper value={got[l.itemId] ?? ''} onChange={(v) => setGot({ ...got, [l.itemId]: v })} step={5} unit={t('common.kg')} error={!!diff} />
+                <Stepper value={got[l.itemId] ?? ''} onChange={(v) => setGot({ ...got, [l.itemId]: v })} step={5} unit={t(`unit.${l.unit ?? 'kg'}`)} error={!!diff} />
                 {diff !== 0 && gotGrams(l.itemId) >= 0 && (
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.dangerBg, borderRadius: radii.xl, paddingHorizontal: 11, paddingVertical: 9 }}>
                     <View style={{ width: 9, height: 9, borderRadius: 5, backgroundColor: colors.danger }} />
                     <Txt size={14} weight={600} color={colors.dangerText} style={{ flex: 1 }}>{diff < 0 ? t('receive.short') : t('receive.over')}</Txt>
-                    <Txt mono size={14} weight={600} color={colors.dangerText}>{diff > 0 ? '+' : ''}{formatKg(diff)} {t('common.kg')}</Txt>
+                    <Txt mono size={14} weight={600} color={colors.dangerText}>{diff > 0 ? '+' : ''}{formatKg(diff)} </Txt>
                   </View>
                 )}
               </Row>

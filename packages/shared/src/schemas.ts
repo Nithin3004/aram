@@ -50,10 +50,14 @@ export const createShopSchema = z.object({
   phone: z.string().regex(/^\d{10}$/),
 });
 
+export const UNITS = ['kg', 'L'] as const;
+export type Unit = (typeof UNITS)[number];
+
 export const itemSchema = z.object({
   code: z.string().trim().min(2).max(16),
   nameEn: z.string().trim().min(1).max(80),
   nameTa: z.string().trim().min(1).max(80),
+  unit: z.enum(UNITS).default('kg'),
   pricePaisePerKg: z.number().int().positive(),
 });
 

@@ -106,6 +106,7 @@ export class RequestsService {
             itemId: l.itemId,
             nameEn: it.nameEn,
             nameTa: it.nameTa,
+            unit: it.unit,
             requestedGrams: l.requestedGrams,
             approvedGrams: l.approvedGrams,
             onHandGrams: b.get(l.itemId) ?? 0,

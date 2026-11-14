@@ -144,7 +144,7 @@ export default function Home() {
           <Txt size={12} color={colors.textSubtle}>{t('app.myStockSub', { n: s.stock.length })}</Txt>
           <Txt mono size={34} weight={600} style={{ marginTop: 10 }}>
             {formatKg(Math.round(s.totalGrams / 1000) * 1000)}
-            <Txt size={15} color={colors.textSubtle}> {t('common.kg')}</Txt>
+            <Txt size={15} color={colors.textSubtle}> {t('unit.mixed')}</Txt>
           </Txt>
           <View style={{ marginTop: 12, flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
             {chips.map((c) => (
@@ -193,7 +193,7 @@ export default function Home() {
                 <Txt mono size={11} color={colors.textSubtle}>{c.code}</Txt>
               </View>
               <View style={{ alignItems: 'flex-end' }}>
-                <Txt mono size={18} weight={600} color={c.low ? colors.warn : colors.textBody}>{formatKg(Math.round(c.totalGrams / 1000) * 1000)} {t('common.kg')}</Txt>
+                <Txt mono size={18} weight={600} color={c.low ? colors.warn : colors.textBody}>{formatKg(Math.round(c.totalGrams / 1000) * 1000)} {t('unit.mixed')}</Txt>
                 {c.low && <Tag label={t('app.low')} tone="warn" />}
               </View>
             </Row>

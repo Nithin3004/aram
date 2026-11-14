@@ -30,7 +30,7 @@ interface ShopDetail {
   type: 'HO' | 'SUPERVISOR' | 'SMALL';
   parent: { code: string; nameEn: string; nameTa: string } | null;
   totalGrams: number;
-  stock: { itemId: string; nameEn: string; nameTa: string; onHandGrams: number; daysLeft: number | null; avgDailySoldGrams: number; low: boolean; watch: boolean }[];
+  stock: { itemId: string; nameEn: string; nameTa: string; unit?: string; onHandGrams: number; daysLeft: number | null; avgDailySoldGrams: number; low: boolean; watch: boolean }[];
   sales: null | {
     today: null | { expectedRevenuePaise: number; cashPaise: number; upiPaise: number; variancePaise: number; varianceFlagged: boolean };
     lastClosingAt: string | null;
@@ -111,7 +111,7 @@ function ShopsScreen() {
         <span style={{ minWidth: 0, paddingLeft: indent ? 18 : 0 }}>
           <span className="cell-main ellipsis">{s.code} {name(s)}</span>
         </span>
-        <span className="cell-num-light small">{kg1(s.totalGrams)} {t('common.kg')}</span>
+        <span className="cell-num-light small">{kg1(s.totalGrams)} {t('unit.mixed')}</span>
         <span className={`right mono xsmall t-${f.tone === 'success' ? 'success' : f.tone}`} style={{ fontWeight: 500 }}>{t(f.key)}</span>
       </TRow>
     );
@@ -144,7 +144,7 @@ function ShopsScreen() {
                   <span className="cell-main ellipsis" style={{ fontWeight: 600, fontSize: 13 }}>{g.sup.code} {name(g.sup)}</span>
                 </span>
                 <span className="right">
-                  <span className="num" style={{ display: 'block', fontSize: 12 }}>{kg1(g.sup.totalGrams)} {t('common.kg')}</span>
+                  <span className="num" style={{ display: 'block', fontSize: 12 }}>{kg1(g.sup.totalGrams)} {t('unit.mixed')}</span>
                   <span className="mono xsmall t-subtle">{t('common.shops', { count: g.count })}</span>
                 </span>
                 {g.gaps > 0 ? <Tag tone="danger">{t('shops.gaps', { n: g.gaps })}</Tag> : g.notClosed > 0 ? <Tag tone="warn">{g.notClosed}</Tag> : <span />}
@@ -189,7 +189,7 @@ function ShopsScreen() {
               <div className="metrics">
                 <div className="metric">
                   <div className="label-mono">{t('shops.onHand')}</div>
-                  <div className="metric-v">{kg1(d.totalGrams)} {t('common.kg')}</div>
+                  <div className="metric-v">{kg1(d.totalGrams)} {t('unit.mixed')}</div>
                 </div>
                 {d.type !== 'HO' && (
                   <>
@@ -247,7 +247,7 @@ function ShopsScreen() {
                   <TRow key={it.itemId} cols="minmax(0,1fr) 120px 96px 90px">
                     <span className="cell-main ellipsis">{name(it)}</span>
                     <Bar pct={pct} tone={it.low ? 'danger' : it.watch ? 'warn' : undefined} />
-                    <span className="cell-num">{formatKg(it.onHandGrams)} {t('common.kg')}</span>
+                    <span className="cell-num">{formatKg(it.onHandGrams)} {t(`unit.${it.unit ?? 'kg'}`)}</span>
                     <span className={`right mono xsmall ${it.low ? 't-danger' : 't-warn'}`}>
                       {it.low ? t('shops.flagLow') : it.watch ? t('shops.flagWatch') : ''}
                       {it.daysLeft !== null && (it.low || it.watch) && <span className="t-subtle" style={{ display: 'block' }}>{t('shops.daysLeft', { d: it.daysLeft.toFixed(1) })}</span>}

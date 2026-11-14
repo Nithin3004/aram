@@ -1,12 +1,12 @@
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { TextInput, View } from 'react-native';
+import { Pressable, TextInput, View } from 'react-native';
 import { businessDate, computeClosing, formatIstDate, formatKg, formatRupees, kgToGrams, rupeesToPaise } from '@aram/shared';
 import { nameIn } from '../lib/i18n';
 import { useApp } from '../lib/store';
 import { colors, fontFamily, radii } from '../theme';
-import { Btn, Card, Cta, NumberField, Row, Screen, Txt } from '../ui';
+import { Btn, Card, Check, Cta, NumberField, Row, Screen, Txt } from '../ui';
 
 const toGrams = (v: string) => {
   try {
@@ -15,6 +15,11 @@ const toGrams = (v: string) => {
     return null;
   }
 };
+/** Pack sizes used in the shops (same defaults as the HO workbook). */
+const PACK_SMALL_G = 500;
+const PACK_LARGE_G = 1000;
+type PackCount = { loose: string; half: string; one: string };
+
 const toPaise = (v: string) => {
   try {
     return v.trim() === '' ? null : rupeesToPaise(v);
@@ -33,6 +38,18 @@ export default function Closing() {
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState<null | 'sent' | 'queued'>(null);
+  // Pack counting (as in the HO workbook): loose + number of ½ and 1 kg/L packs → total.
+  const [packs, setPacks] = useState(false);
+  const [pk, setPk] = useState<Record<string, PackCount>>({});
+  const setPack = (itemId: string, p: PackCount) => {
+    setPk({ ...pk, [itemId]: p });
+    const parts = [toGrams(p.loose || '0'), toGrams(p.half || '0'), toGrams(p.one || '0')];
+    const empty = !p.loose && !p.half && !p.one;
+    const bad = parts.some((x) => x === null || x < 0);
+    // Packs are counted in whole numbers: ½ pack = 500 g/ml, 1 pack = 1000 g/ml.
+    const grams = bad ? null : parts[0]! + Math.round(parts[1]! / 1000) * PACK_SMALL_G + Math.round(parts[2]! / 1000) * PACK_LARGE_G;
+    setLeft({ ...left, [itemId]: empty ? '' : grams === null ? 'x' : String(grams / 1000) });
+  };
 
   const draft = snapshot?.draft;
   const today = businessDate();
@@ -124,13 +141,19 @@ export default function Closing() {
           <View style={{ paddingHorizontal: 16, paddingVertical: 12, backgroundColor: colors.card, borderBottomWidth: 1, borderColor: colors.divider }}>
             <Txt size={15} weight={600}>{t('closing.countLeft')}</Txt>
             {!allCounted && <Txt size={12} color={colors.textSubtle}>{t('closing.enterAll')}</Txt>}
+            <Pressable onPress={() => setPacks(!packs)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 10 }}>
+              <Check on={packs} />
+              <Txt size={14} weight={600}>{t('closing.countPacks')}</Txt>
+            </Pressable>
           </View>
           {lines.map((l) => {
             const g = toGrams(left[l.itemId] ?? '');
             const available = l.openingGrams + l.receivedGrams - l.sentOutGrams + l.adjustmentGrams;
             const over = g !== null && g > available;
+            const unit = t(`unit.${l.unit ?? 'kg'}`);
+            const p = pk[l.itemId] ?? { loose: '', half: '', one: '' };
             return (
-              <Row key={l.itemId}>
+              <Row key={l.itemId} style={packs ? { flexDirection: 'column', alignItems: 'stretch', gap: 10 } : undefined}>
                 <View style={{ flex: 1, minWidth: 0 }}>
                   <Txt size={16} weight={600}>{nameIn(l)}</Txt>
                   <Txt size={11} color={colors.textSubtle}>
@@ -138,7 +161,23 @@ export default function Closing() {
                     {l.receivedGrams || l.sentOutGrams ? ` · ${t('closing.moved', { in: formatKg(l.receivedGrams), out: formatKg(l.sentOutGrams) })}` : ''}
                   </Txt>
                 </View>
-                <NumberField width={124} value={left[l.itemId] ?? ''} onChangeText={(x) => setLeft({ ...left, [l.itemId]: x })} unit={t('common.kg')} error={over} highlight={g === null} />
+                {packs ? (
+                  <View style={{ gap: 6 }}>
+                    <View style={{ flexDirection: 'row', gap: 8 }}>
+                      {(['loose', 'half', 'one'] as const).map((k) => (
+                        <View key={k} style={{ flex: 1, gap: 4 }}>
+                          <Txt size={11} color={colors.textSubtle}>{k === 'loose' ? `${t('closing.loose')} (${unit})` : t(k === 'half' ? 'closing.halfPacks' : 'closing.onePacks', { unit })}</Txt>
+                          <NumberField value={p[k]} onChangeText={(x) => setPack(l.itemId, { ...p, [k]: x })} highlight={!p[k]} />
+                        </View>
+                      ))}
+                    </View>
+                    <Txt mono size={13} weight={600} color={over ? colors.dangerText : colors.accent} align="right">
+                      {t('closing.packTotal', { qty: g === null ? '—' : formatKg(g), unit })}
+                    </Txt>
+                  </View>
+                ) : (
+                  <NumberField width={124} value={left[l.itemId] ?? ''} onChangeText={(x) => setLeft({ ...left, [l.itemId]: x })} unit={unit} error={over} highlight={g === null} />
+                )}
               </Row>
             );
           })}

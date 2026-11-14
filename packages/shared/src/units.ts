@@ -3,6 +3,11 @@
  * These helpers are the only place conversions happen.
  */
 
+/** "9840012345" → "98x xxxx 2345"; empty or short numbers (not yet registered) → "—". */
+export function maskPhone(phone: string): string {
+  return phone && phone.length >= 10 ? phone.slice(0, 2) + 'x xxxx ' + phone.slice(-4) : '—';
+}
+
 /** "12.5" kg (string or number) → 12500 g. Rounds to the nearest gram. */
 export function kgToGrams(kg: number | string): number {
   const n = typeof kg === 'string' ? Number(kg.trim()) : kg;

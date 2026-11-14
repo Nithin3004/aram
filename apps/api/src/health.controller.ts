@@ -11,6 +11,7 @@ export class HealthController {
   @Get()
   async health() {
     await this.prisma.$queryRaw`SELECT 1`;
-    return { ok: true };
+    // Which data set is served ("live" or the preview sample); no data is exposed.
+    return { ok: true, dataset: process.env.DB_SCHEMA ?? 'preview' };
   }
 }

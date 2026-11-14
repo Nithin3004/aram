@@ -21,7 +21,7 @@ export default function Stock() {
           </View>
           {s.low && <Tag label={t('shops.flagLow')} tone="danger" />}
           <Txt mono size={20} weight={600}>{formatKg(s.onHandGrams)}</Txt>
-          <Txt mono size={12} color={colors.textSubtle}>{t('common.kg')}</Txt>
+          <Txt mono size={12} color={colors.textSubtle}>{t(`unit.${s.unit ?? 'kg'}`)}</Txt>
         </Row>
       ))}
     </Screen>

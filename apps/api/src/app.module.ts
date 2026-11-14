@@ -28,6 +28,8 @@ import { MissingClosingJob } from './closings/missing-closing.job';
 import { DashboardController } from './dashboard/dashboard.controller';
 import { AdminController } from './admin/admin.controller';
 import { HealthController } from './health.controller';
+import { ReportsController } from './reports/reports.controller';
+import { ReportsService } from './reports/reports.service';
 
 @Module({
   imports: [
@@ -48,6 +50,7 @@ import { HealthController } from './health.controller';
     ClosingsController,
     DashboardController,
     AdminController,
+    ReportsController,
   ],
   providers: [
     PrismaService,
@@ -65,6 +68,7 @@ import { HealthController } from './health.controller';
     IssuesService,
     ClosingsService,
     MissingClosingJob,
+    ReportsService,
     { provide: APP_GUARD, useClass: AuthGuard },
   ],
 })

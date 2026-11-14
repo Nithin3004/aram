@@ -26,7 +26,7 @@ interface Detail {
   receivedAt: string | null;
   resolvedAt: string | null;
   hasPhoto: boolean;
-  lines: { itemId: string; nameEn: string; nameTa: string; orderedGrams?: number; sentGrams: number | null; receivedGrams?: number | null }[];
+  lines: { itemId: string; nameEn: string; nameTa: string; unit?: string; orderedGrams?: number; sentGrams: number | null; receivedGrams?: number | null }[];
   issue: null | { id: string; ref: string; status: string; description: string; recountRequestedAt: string | null; recount: { lines: { itemId: string; receivedGrams: number }[]; note: string } | null; recountAt: string | null; resolutionNote: string | null; resolvedAt: string | null };
 }
 interface Item { id: string; code: string; nameEn: string; nameTa: string; isActive: boolean }
@@ -99,7 +99,7 @@ function DispatchesScreen() {
                 </span>
               </span>
               <span className="right">
-                <span className="num" style={{ display: 'block', fontSize: 12 }}>{formatKg(r.totalGrams)} {t('common.kg')}</span>
+                <span className="num" style={{ display: 'block', fontSize: 12 }}>{formatKg(r.totalGrams)} {t('unit.mixed')}</span>
                 <span className="mono xsmall t-subtle">{t('dispatch.items', { n: r.lineCount })}</span>
               </span>
               <span className="right">
@@ -336,10 +336,10 @@ function ConfirmSent({ d, onClose, onDone }: { d: Detail; onClose: () => void; o
         <div key={l.itemId} className="row" style={{ flexWrap: 'nowrap' }}>
           <span style={{ flex: 1 }}>
             <span className="cell-main">{name(l)}</span>
-            <span className="cell-sub mono">{t('dispatch.ordered')} {formatKg(l.orderedGrams ?? 0)} {t('common.kg')}</span>
+            <span className="cell-sub mono">{t('dispatch.ordered')} {formatKg(l.orderedGrams ?? 0)} {t(`unit.${l.unit ?? 'kg'}`)}</span>
           </span>
           <Input numeric inputMode="decimal" style={{ width: 120 }} value={qty[l.itemId]} onChange={(e) => setQty({ ...qty, [l.itemId]: e.target.value })} />
-          <span className="small t-subtle">{t('common.kg')}</span>
+          <span className="small t-subtle">{t(`unit.${l.unit ?? 'kg'}`)}</span>
         </div>
       ))}
       <FormError>{act.error}</FormError>
@@ -381,7 +381,7 @@ function Slip({ d, onClose }: { d: Detail; onClose: () => void }) {
         {d.lines.map((l) => (
           <div key={l.itemId} className="row" style={{ justifyContent: 'space-between', borderBottom: '1px solid var(--c-divider-faint)', padding: '6px 0' }}>
             <span>{l.nameEn} · <span lang="ta">{l.nameTa}</span></span>
-            <span className="num">{formatKg(l.orderedGrams ?? 0)} kg</span>
+            <span className="num">{formatKg(l.orderedGrams ?? 0)} {l.unit ?? 'kg'}</span>
           </div>
         ))}
       </div>

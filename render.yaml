@@ -7,27 +7,32 @@ services:
     plan: free
     region: singapore
     rootDir: .
+    # Live data lives in its own Postgres schema (DB_SCHEMA), apart from the earlier preview sample.
+    # On first deploy the live schema is created and loaded from data-import/live (the HO workbook);
+    # later deploys leave existing data untouched (--if-empty).
     buildCommand: >-
       npm install -g pnpm@9.15.9 &&
       pnpm install --frozen-lockfile &&
       pnpm --filter @aram/shared build &&
       cd apps/api &&
       npx prisma generate &&
-      npx prisma migrate deploy &&
-      npx ts-node --transpile-only prisma/seed.ts --if-empty &&
+      node scripts/db-env.cjs npx prisma migrate deploy &&
+      node scripts/db-env.cjs npx ts-node --transpile-only prisma/import.ts ../../data-import/live --if-empty &&
       npx nest build
     startCommand: cd apps/api && node dist/main.js
     healthCheckPath: /api/health
     envVars:
       - key: NODE_VERSION
         value: "22"
+      - key: DB_SCHEMA
+        value: live
       - key: JWT_SECRET
         generateValue: true
       - key: DATABASE_URL
         sync: false
       - key: CORS_ORIGINS
         sync: false
-      # Passwords for the preview accounts created on first deploy (choose your own).
+      # Starting passwords for the accounts created on first load (admin + every shop).
       - key: SEED_ADMIN_PASSWORD
         sync: false
       - key: SEED_SHOP_PASSWORD

@@ -19,6 +19,7 @@ export interface StockItem {
   itemId: string;
   nameEn: string;
   nameTa: string;
+  unit?: 'kg' | 'L';
   onHandGrams: number;
   daysLeft: number | null;
   low: boolean;
@@ -45,7 +46,7 @@ export interface DispatchDetail {
   source: Named;
   dest: Named;
   deliveryCode?: string;
-  lines: { itemId: string; nameEn: string; nameTa: string; orderedGrams?: number; sentGrams: number | null; receivedGrams?: number | null }[];
+  lines: { itemId: string; nameEn: string; nameTa: string; unit?: 'kg' | 'L'; orderedGrams?: number; sentGrams: number | null; receivedGrams?: number | null }[];
 }
 
 export interface IssueRow {
@@ -70,7 +71,7 @@ export interface RequestRow {
   reason: string;
   rejectReason: string | null;
   createdAt: string;
-  lines: { itemId: string; nameEn: string; nameTa: string; requestedGrams: number; approvedGrams: number | null }[];
+  lines: { itemId: string; nameEn: string; nameTa: string; unit?: 'kg' | 'L'; requestedGrams: number; approvedGrams: number | null }[];
 }
 
 export interface ClosingDraft {
@@ -79,7 +80,7 @@ export interface ClosingDraft {
   previousClosingAt: string | null;
   varianceTolerancePaise: number;
   closingDueTime: string;
-  lines: { itemId: string; nameEn: string; nameTa: string; openingGrams: number; receivedGrams: number; sentOutGrams: number; adjustmentGrams: number; pricePaisePerKg: number }[];
+  lines: { itemId: string; nameEn: string; nameTa: string; unit?: 'kg' | 'L'; openingGrams: number; receivedGrams: number; sentOutGrams: number; adjustmentGrams: number; pricePaisePerKg: number }[];
 }
 
 export interface ChildShop {
@@ -95,6 +96,7 @@ export interface CatalogItem {
   id: string;
   nameEn: string;
   nameTa: string;
+  unit?: 'kg' | 'L';
   pricePaisePerKg: number | null;
 }
 

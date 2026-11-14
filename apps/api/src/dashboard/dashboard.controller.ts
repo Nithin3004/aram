@@ -56,14 +56,19 @@ export class DashboardController {
     const items = await this.prisma.item.findMany();
     const itemById = new Map(items.map((i) => [i.id, i]));
 
-    const sumShop = (id: string) => [...(bal.get(id)?.values() ?? [])].reduce((a, b) => a + b, 0);
-    const stock = { ho: 0, supervisors: 0, small: 0 };
+    // Weight (kg) and volume (L) are never added together: the headline totals count kg items,
+    // and litres are reported separately.
+    const isLitre = (itemId: string) => itemById.get(itemId)?.unit === 'L';
+    const sumShop = (id: string) => [...(bal.get(id)?.entries() ?? [])].reduce((a, [itemId, g]) => a + (isLitre(itemId) ? 0 : g), 0);
+    const stock = { ho: 0, supervisors: 0, small: 0, litresMl: 0 };
     for (const s of shops) {
       const g = sumShop(s.id);
       if (s.type === 'HO') stock.ho += g;
       else if (s.type === 'SUPERVISOR') stock.supervisors += g;
       else stock.small += g;
+      for (const [itemId, ml] of bal.get(s.id)?.entries() ?? []) if (isLitre(itemId)) stock.litresMl += ml;
     }
+    const unpricedItems = items.filter((i) => i.isActive).length - (await this.prisma.itemPrice.groupBy({ by: ['itemId'], where: { effectiveFrom: { lte: today }, item: { isActive: true } } })).length;
 
     const expected = closings.reduce((a, c) => a + c.expectedRevenuePaise, 0);
     const cash = closings.reduce((a, c) => a + c.cashPaise, 0);
@@ -92,6 +97,8 @@ export class DashboardController {
       attention.push({ tag: 'NO_CLOSING', tone: 'warn', count: notClosed.length, time: formatIstTime(new Date()), link: 'shops' });
     }
     if (low.length) attention.push({ tag: 'LOW_STOCK', tone: 'warn', count: low.length, shops: new Set(low.map((l) => l.shopId)).size, days: st.lowStockDays, link: 'shops' });
+    // Without a selling price, closings cannot work out sales or money gaps for that item.
+    if (unpricedItems > 0) attention.unshift({ tag: 'NO_PRICE', tone: 'danger', count: unpricedItems, link: 'items' });
     if (pendingReq) attention.push({ tag: 'REQUEST', tone: 'neutral', count: pendingReq, link: 'requests' });
     if (freq.length) attention.push({ tag: 'FREQUENT', tone: 'neutral', count: freq.length, link: 'requests' });
     const otherIssues = openIssues.filter((i) => i.type !== 'CASH_VARIANCE' && i.type !== 'DISPATCH_DISCREPANCY').length;
@@ -108,6 +115,7 @@ export class DashboardController {
         small: shops.filter((s) => s.type === 'SMALL').length,
       },
       stock: { totalGrams: stock.ho + stock.supervisors + stock.small, ...stock },
+      unpricedItems,
       sales: { expectedPaise: expected, cashPaise: cash, upiPaise: upi, collectedPaise: cash + upi },
       gaps: {
         totalPaise: gaps.reduce((a, c) => a + c.variancePaise, 0),
@@ -132,7 +140,7 @@ export class DashboardController {
         return {
           shop: shopRef(s.id),
           parent: parent ? { code: parent.code, nameEn: parent.nameEn, nameTa: parent.nameTa } : null,
-          item: { id: it.id, nameEn: it.nameEn, nameTa: it.nameTa },
+          item: { id: it.id, nameEn: it.nameEn, nameTa: it.nameTa, unit: it.unit },
           onHandGrams: l.onHandGrams,
           daysLeft: l.daysLeft,
         };

@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { z } from 'zod';
-import { ALL_PERMISSIONS, createAdminSchema, resetPasswordSchema, settingsSchema, updateAdminSchema } from '@aram/shared';
+import { ALL_PERMISSIONS, maskPhone, createAdminSchema, resetPasswordSchema, settingsSchema, updateAdminSchema } from '@aram/shared';
 import { PrismaService } from '../prisma.service';
 import { AuthUser, CurrentUser, Roles } from '../common/auth-user';
 import { ZodPipe } from '../common/zod.pipe';
@@ -33,7 +33,7 @@ export class AdminController {
       role: u.role,
       isActive: u.isActive,
       permissions: u.role === 'SUPER_ADMIN' ? ALL_PERMISSIONS : u.permissions,
-      phoneMasked: u.phone.slice(0, 2) + 'x xxxx ' + u.phone.slice(-4),
+      phoneMasked: maskPhone(u.phone),
     }));
   }
 

@@ -2,7 +2,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { createHash, randomInt } from 'crypto';
-import { formatIstTime } from '@aram/shared';
+import { formatIstTime, maskPhone } from '@aram/shared';
 import { PrismaService } from '../prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { AppError, badRequest } from '../common/errors';
@@ -93,7 +93,7 @@ export class AuthService {
       return {
         otpRequired: true as const,
         challengeId: ch.id,
-        phoneMasked: user.phone.slice(0, 2) + 'x xxxx ' + user.phone.slice(-4),
+        phoneMasked: maskPhone(user.phone),
         devCode: this.sms.exposesCode ? code : undefined,
       };
     }

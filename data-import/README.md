@@ -8,9 +8,12 @@ uploaded to GitHub (shop names and phone numbers stay private).
 |---|---|---|
 | `admins.csv` | Head Office person | `username`, `name`, `phone` (10 digits), `role` (`SUPER_ADMIN` or `ADMIN`), `permissions` (separate with `;`) |
 | `shops.csv` | shop | `code` (e.g. `S-001`, `SUP-01`), `type` (`SUPERVISOR` or `SMALL`), `name_en`, `name_ta`, `supervisor_code` (empty for supervisors), `username`, `phone` |
-| `items.csv` | item | `code`, `name_en`, `name_ta`, `price_per_kg` (₹) |
+| `items.csv` | item | `code`, `name_en`, `name_ta`, `unit` (`kg` or `L`), `price_per_kg` (₹ per kg or per litre; may be empty — then set it on Items & prices) |
 | `vendors.csv` | vendor | `name_en`, `name_ta`, `phone`, `supplies` |
-| `opening_stock.csv` | shop + item with stock today | `shop_code` (`HO` for the warehouse), `item_code`, `kg` |
+| `opening_stock.csv` | shop + item with stock today | `shop_code` (`HO` for the warehouse), `item_code`, `kg` (kg or litres), `rate` (₹ cost per unit, optional — used for profit until purchases exist) |
+
+`data-import/live/` holds the live data converted from the HO workbook (shop IDs S001–S400, supervisors
+SUP01–SUP10, 6 products). Tamil names and phone numbers may be left empty there and added later.
 
 Permissions: `APPROVE_REQUESTS`, `CHANGE_PRICES`, `MANAGE_ITEMS`, `MANAGE_VENDORS`, `CREATE_DISPATCH`,
 `RESOLVE_ISSUES`. An admin with none is view-only. Super Admin always has everything.

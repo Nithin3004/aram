@@ -12,13 +12,13 @@ type Named = { id?: string; code: string; nameEn: string; nameTa: string };
 interface Overview {
   now: string;
   businessDate: string;
-  stock: { totalGrams: number; ho: number; supervisors: number; small: number };
+  stock: { totalGrams: number; ho: number; supervisors: number; small: number; litresMl: number };
   sales: { expectedPaise: number; cashPaise: number; upiPaise: number; collectedPaise: number };
   gaps: { totalPaise: number; shops: number; over1000: number };
   closings: { submitted: number; expected: number; open: number; dueTime: string; overdue: boolean };
   attention: Array<{ tag: string; tone: StatusTone; link: string; shop?: Named; variancePaise?: number; ref?: string; diffGrams?: number; lines?: number; count?: number; shops?: number; days?: number; time?: string }>;
   pipeline: Record<string, number>;
-  lowStock: Array<{ shop: Named; parent: Named | null; item: { nameEn: string; nameTa: string }; onHandGrams: number; daysLeft: number | null }>;
+  lowStock: Array<{ shop: Named; parent: Named | null; item: { nameEn: string; nameTa: string; unit?: string }; onHandGrams: number; daysLeft: number | null }>;
   lowStockCount: number;
 }
 
@@ -61,6 +61,8 @@ export default function OverviewPage() {
         return { ...a, title: t('overview.att.noClosing', { n: a.count }), value: a.time };
       case 'LOW_STOCK':
         return { ...a, title: t('overview.att.lowStock', { n: a.count, days: a.days }), value: t('common.shops', { count: a.shops }) };
+      case 'NO_PRICE':
+        return { ...a, title: t('overview.att.noPrice', { n: a.count }), value: String(a.count) };
       case 'REQUEST':
         return { ...a, title: t('overview.att.requests', { n: a.count }), value: String(a.count) };
       case 'FREQUENT':
@@ -94,7 +96,12 @@ export default function OverviewPage() {
           label={t('overview.stockNetwork')}
           value={formatKg(Math.round(o.stock.totalGrams / 1000) * 1000)}
           unit={t('common.kg')}
-          sub={t('overview.stockSplit', { ho: formatKg(Math.round(o.stock.ho / 1000) * 1000), sup: formatKg(Math.round(o.stock.supervisors / 1000) * 1000), small: formatKg(Math.round(o.stock.small / 1000) * 1000) })}
+          sub={
+            <>
+              {t('overview.stockSplit', { ho: formatKg(Math.round(o.stock.ho / 1000) * 1000), sup: formatKg(Math.round(o.stock.supervisors / 1000) * 1000), small: formatKg(Math.round(o.stock.small / 1000) * 1000) })}
+              {o.stock.litresMl > 0 && <div>{t('overview.litres', { l: formatKg(Math.round(o.stock.litresMl / 1000) * 1000) })}</div>}
+            </>
+          }
         />
         <Kpi label={t('overview.salesToday')} value={formatRupeesCompact(o.sales.expectedPaise)}>
           <div className="kpi-sub row" style={{ flexWrap: 'nowrap' }}>
@@ -183,7 +190,7 @@ export default function OverviewPage() {
                 </span>
                 <span className="small t-muted ellipsis">{name(l.item)}</span>
                 <span className="cell-num t-warn">
-                  {formatKg(l.onHandGrams)} {t('common.kg')}
+                  {formatKg(l.onHandGrams)} {t(`unit.${l.item.unit ?? 'kg'}`)}
                 </span>
               </div>
             ))}

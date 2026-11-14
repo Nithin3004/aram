@@ -382,6 +382,23 @@ describe('daily closing', () => {
     expect(await prisma.issue.count({ where: { shopId: ids.s2, type: 'NEGATIVE_SOLD' } })).toBe(1);
   });
 
+  it('profit register: sales from closings, cost from purchase rate, HO only', async () => {
+    const today = businessDate();
+    expect((await api('s001').get(`/reports/register?period=day&from=${today}&to=${today}`)).status).toBe(403);
+    // Give rice a purchase cost of ₹40/kg this month so cost of goods can be checked.
+    await prisma.vendor.create({ data: { id: 'v-test', nameEn: 'Test Vendor' } });
+    await prisma.purchase.create({ data: { vendorId: 'v-test', itemId: ids.rice, qtyGrams: 100_000, costPaisePerKg: 4000, date: today, invoiceNo: 'T1', createdById: 'test' } });
+    const r = await api('ops').get(`/reports/register?period=day&from=${today}&to=${today}&shopId=${ids.s1}&itemId=${ids.rice}`);
+    expect(r.status).toBe(200);
+    // S-001 sold 40 kg rice at ₹50 → ₹2,000 sales; cost 40 kg × ₹40 = ₹1,600; gross profit ₹400 (20%).
+    expect(r.body.total.salesPaise).toBe(200_000);
+    expect(r.body.total.cogsPaise).toBe(160_000);
+    expect(r.body.total.grossProfitPaise).toBe(40_000);
+    expect(r.body.total.gpPct).toBe(20);
+    expect(r.body.total.salesQty).toBe(40_000);
+    expect(r.body.total.closingQty).toBe(60_000);
+  });
+
   it('issues raised offline are de-duplicated too', async () => {
     const body = { clientId: randomUUID(), type: 'DAMAGED_GOODS', description: 'Wet bags' };
     const a = await api('s002').post('/issues', body);

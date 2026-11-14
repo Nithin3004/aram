@@ -40,6 +40,7 @@ export class ItemsController {
         code: i.code,
         nameEn: i.nameEn,
         nameTa: i.nameTa,
+        unit: i.unit,
         isActive: i.isActive,
         pricePaisePerKg: current.get(i.id) ?? null,
         ...(ho && {
@@ -73,7 +74,7 @@ export class ItemsController {
     return this.prisma.$transaction(async (tx) => {
       const max = await tx.item.aggregate({ _max: { sortOrder: true } });
       const item = await tx.item.create({
-        data: { code: body.code, nameEn: body.nameEn, nameTa: body.nameTa, sortOrder: (max._max.sortOrder ?? 0) + 1 },
+        data: { code: body.code, nameEn: body.nameEn, nameTa: body.nameTa, unit: body.unit, sortOrder: (max._max.sortOrder ?? 0) + 1 },
       });
       // A brand-new item has no sales history, so its first price can apply from today.
       await tx.itemPrice.create({
@@ -126,8 +127,10 @@ export class ItemsController {
   async changePrice(@CurrentUser() user: AuthUser, @Param('id') id: string, @Body(new ZodPipe(priceChangeSchema)) body: { pricePaisePerKg: number }) {
     const item = await this.prisma.item.findUnique({ where: { id } });
     if (!item) throw notFound('Item');
-    const effectiveFrom = addDays(businessDate(), 1);
     const current = (await this.prices.pricesOn(businessDate())).get(id) ?? null;
+    // A change applies from the next day so today's sales are never repriced. An item that has
+    // never had a price (e.g. just imported) gets its first price from today: there is nothing to reprice.
+    const effectiveFrom = current === null ? businessDate() : addDays(businessDate(), 1);
     return this.prisma.$transaction(async (tx) => {
       const existing = await tx.itemPrice.findUnique({ where: { itemId_effectiveFrom: { itemId: id, effectiveFrom } } });
       const row = await tx.itemPrice.upsert({
