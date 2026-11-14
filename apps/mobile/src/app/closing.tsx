@@ -56,7 +56,8 @@ export default function DailyEntry() {
   // Suggested selling rate = HO's price for the day (the shop may change it).
   const defaultSell = (itemId: string) => {
     const p = lines.find((l) => l.itemId === itemId)?.pricePaisePerKg ?? 0;
-    return p ? (p / 100).toFixed(2) : '';
+    // ₹92 rather than 92.00, so the rate fits its box.
+    return p ? (p % 100 === 0 ? String(p / 100) : (p / 100).toFixed(2)) : '';
   };
 
   const entries = useMemo(() => {
@@ -122,7 +123,9 @@ export default function DailyEntry() {
     return lines.map((l) => {
       const unit = t(`unit.${l.unit ?? 'kg'}`);
       const f = forms[l.itemId] ?? blank(kind === 'sell' ? defaultSell(l.itemId) : '');
-      const upd = (k: keyof PackForm, v: string) => set({ ...forms, [l.itemId]: { ...f, [k]: v } });
+      // Functional update: fast typing across fields must never overwrite another field's value.
+      const upd = (k: keyof PackForm, v: string) =>
+        set((prev) => ({ ...prev, [l.itemId]: { ...(prev[l.itemId] ?? blank(kind === 'sell' ? defaultSell(l.itemId) : '')), [k]: v } }));
       const e = toEntry(f);
       const line = result?.lines.find((x) => x.itemId === l.itemId);
       const qty = kind === 'buy' ? line?.purchaseGrams : line?.salesGrams;
@@ -130,7 +133,7 @@ export default function DailyEntry() {
       const field = (k: keyof PackForm, label: string) => (
         <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
           <Txt size={11} color={colors.textSubtle} numberOfLines={1}>{label}</Txt>
-          <NumberField value={f[k]} onChangeText={(v) => upd(k, v)} highlight={!f[k]} />
+          <NumberField small value={f[k]} onChangeText={(v) => upd(k, v)} highlight={!f[k]} />
         </View>
       );
       return (

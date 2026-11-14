@@ -403,6 +403,12 @@ describe('daily entry (workbook model) & opening stock', () => {
     expect(await balance(ids.sup, ids.sugar)).toBe(before + 7000);
     expect((await api('ops').post('/opening-stock', { shopId: ids.sup, lines: [{ itemId: ids.sugar, grams: 1 }] })).status).toBe(409);
     expect((await api('sup01').get(`/opening-stock/${ids.sup}`)).body.set).toBe(true);
+    // In the profit register, opening stock counts as the OPENING of the period it was entered in.
+    const today = businessDate();
+    const reg = await api('ops').get(`/reports/register?period=day&from=${today}&to=${today}&shopId=${ids.sup}&itemId=${ids.sugar}`);
+    expect(reg.status).toBe(200);
+    expect(reg.body.rows[0].openingQty).toBeGreaterThanOrEqual(7000);
+    expect(reg.body.total.inQty).toBe(0);
   });
 
   it('Super Admin edits a shop: Tamil name and login phone', async () => {

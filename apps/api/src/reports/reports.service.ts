@@ -105,12 +105,12 @@ export class ReportsService {
     };
 
     // ---- daily stock movements per item (IST calendar day) -----------------------------------
-    const moves = await this.prisma.$queryRaw<{ itemId: string; d: string; type: string; g: bigint }[]>`
+    const moves = await this.prisma.$queryRaw<{ itemId: string; d: string; type: string; opening: boolean; g: bigint }[]>`
       SELECT l."itemId", to_char((l."effectiveAt" AT TIME ZONE 'UTC') AT TIME ZONE 'Asia/Kolkata', 'YYYY-MM-DD') AS d,
-             l."type"::text AS type, SUM(l."qtyGrams")::bigint AS g
+             l."type"::text AS type, (l."refType" = 'OpeningStock') AS opening, SUM(l."qtyGrams")::bigint AS g
       FROM "StockLedger" l
       WHERE l."shopId" IN (${Prisma.join(shopIds)}) ${itemFilter}
-      GROUP BY 1, 2, 3`;
+      GROUP BY 1, 2, 3, 4`;
     // Sales from daily closings.
     const sales = await this.prisma.$queryRaw<{ itemId: string; d: string; sold: bigint; amt: bigint }[]>`
       SELECT cl."itemId", c."businessDate" AS d, SUM(cl."soldGrams")::bigint AS sold, SUM(cl."expectedPaise")::bigint AS amt
@@ -128,10 +128,18 @@ export class ReportsService {
       if (!m.has(d)) m.set(d, new Map());
       m.get(d)!.set(item, (m.get(d)!.get(item) ?? 0) + g);
     };
+    // Opening stock (workbook Opening_Stock) is the stock a shop starts with, so it belongs to the
+    // OPENING of the period it was entered in, not to that period's movements.
+    const periodKey = (d: string) => (q.period === 'day' ? d : q.period === 'month' ? monthKey(d) : String(fyOf(d)));
+    const openAdd = new Map<string, Map<string, number>>(); // periodKey -> item -> grams
     for (const r of moves) {
       const g = Number(r.g);
       if (r.d < q.from) openQty.set(r.itemId, (openQty.get(r.itemId) ?? 0) + g);
-      else if (r.d <= to) {
+      else if (r.d <= to && r.opening) {
+        const k = periodKey(r.d);
+        if (!openAdd.has(k)) openAdd.set(k, new Map());
+        openAdd.get(k)!.set(r.itemId, (openAdd.get(k)!.get(r.itemId) ?? 0) + g);
+      } else if (r.d <= to) {
         bump(dayNet, r.d, r.itemId, g);
         // Inbound: purchases (HO's and the shops' own) everywhere; for a shop/supervisor, also goods received from HO.
         if (r.type === 'PURCHASE' || (!chain && r.type === 'RECEIVE_IN')) bump(dayIn, r.d, r.itemId, g);
@@ -178,7 +186,6 @@ export class ReportsService {
       closingQty: number;
     };
     const rows: Row[] = [];
-    const periodKey = (d: string) => (q.period === 'day' ? d : q.period === 'month' ? monthKey(d) : String(fyOf(d)));
     const periodLabel = (k: string) => {
       if (q.period === 'day') return `${Number(k.slice(8, 10))} ${MONTHS[Number(k.slice(5, 7)) - 1]} ${k.slice(0, 4)}`;
       if (q.period === 'month') return `${MONTHS[Number(k.slice(5, 7)) - 1]} ${k.slice(0, 4)}`;
@@ -191,6 +198,7 @@ export class ReportsService {
       const ym = monthKey(d);
       if (!cur || cur.key !== k) {
         if (cur) rows.push(cur);
+        for (const [itemId, g] of openAdd.get(k) ?? []) qty.set(itemId, (qty.get(itemId) ?? 0) + g);
         cur = { key: k, label: periodLabel(k), openingValuePaise: valueOf(ym), inPaise: 0, salesPaise: 0, cogsPaise: 0, closingValuePaise: 0, openingQty: totalQty(), inQty: 0, salesQty: 0, closingQty: 0 };
       }
       for (const [, g] of dayIn.get(d) ?? []) cur.inQty += g;

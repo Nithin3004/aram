@@ -91,11 +91,11 @@ export default function OpeningStock() {
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <View style={{ flex: 1, gap: 4 }}>
                 <Txt size={11} color={colors.textSubtle}>{t('shops.qty', { unit })}</Txt>
-                <NumberField value={x.qty} onChangeText={(q) => setV({ ...v, [i.itemId]: { ...x, qty: q } })} unit={unit} highlight={!x.qty} />
+                <NumberField value={x.qty} onChangeText={(q) => setV((p) => ({ ...p, [i.itemId]: { ...(p[i.itemId] ?? { qty: '', rate: '' }), qty: q } }))} unit={unit} highlight={!x.qty} />
               </View>
               <View style={{ flex: 1, gap: 4 }}>
                 <Txt size={11} color={colors.textSubtle}>{t('shops.rate', { unit })}</Txt>
-                <NumberField value={x.rate} onChangeText={(r) => setV({ ...v, [i.itemId]: { ...x, rate: r } })} unit="₹" />
+                <NumberField value={x.rate} onChangeText={(r) => setV((p) => ({ ...p, [i.itemId]: { ...(p[i.itemId] ?? { qty: '', rate: '' }), rate: r } }))} unit="₹" />
               </View>
             </View>
           </View>

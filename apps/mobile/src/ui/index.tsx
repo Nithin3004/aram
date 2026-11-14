@@ -244,7 +244,8 @@ export function Tag({ label, tone = 'neutral' }: { label: string; tone?: StatusT
 
 // ---------------------------------------------------------------------------
 /** Large numeric field with a unit (kg / ₹). */
-export function NumberField({ value, onChangeText, unit, error, width, highlight, placeholder, ...rest }: TextInputProps & { unit?: string; error?: boolean; width?: number; highlight?: boolean }) {
+/** small: compact text for grids of four fields (daily entry), so values like 165.50 still fit. */
+export function NumberField({ value, onChangeText, unit, error, width, highlight, placeholder, small, ...rest }: TextInputProps & { unit?: string; error?: boolean; width?: number; highlight?: boolean; small?: boolean }) {
   const { i18n } = useTranslation();
   return (
     <View
@@ -260,7 +261,7 @@ export function NumberField({ value, onChangeText, unit, error, width, highlight
         keyboardType="decimal-pad"
         placeholder={placeholder ?? '—'}
         placeholderTextColor={colors.textFaint}
-        style={[s.numInput, { fontFamily: fontFamily('mono', 600, i18n.language) }]}
+        style={[s.numInput, { fontFamily: fontFamily('mono', 600, i18n.language) }, small && { fontSize: 16 }]}
         {...rest}
       />
       {unit ? <Txt mono size={13} color={colors.textSubtle}>{unit}</Txt> : null}
