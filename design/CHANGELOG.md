@@ -16,3 +16,6 @@
 ### Screens not in the design (built plain from existing tokens/components, marked "Plain layout")
 - Web: login/OTP, Settings (thresholds), and all create/edit dialogs (new dispatch, order transfer, confirm sent, delivery slip with QR, approve partially, reject, add item, record purchase, vendor, create admin, add shop).
 - Android: settings, my stock, my requests & issues, report a problem, confirm transfer sent, recount.
+- Added for the HO workbook model (Nov 2026), also plain: web **Profit & registers**, Edit shop (EN/TA names, phone),
+  Enter opening stock, admin phone, password change/reset dialogs; Android **Daily entry** (purchases → sales with
+  ½ / 1 kg packs → cash/UPI → review; replaces the design's count-based closing) and **Opening stock**.
