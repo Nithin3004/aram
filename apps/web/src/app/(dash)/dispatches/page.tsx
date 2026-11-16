@@ -440,7 +440,6 @@ function CreateDispatch({ kind, initialDest, onClose, onDone }: { kind: 'DISPATC
         </>
       }
     >
-      <span className="notice-plain" style={{ alignSelf: 'flex-start' }}>{t('common.notDesigned')}</span>
       {!shops.data || !items.data ? (
         <Loading />
       ) : (

@@ -139,6 +139,10 @@ describe('permissions (server-side)', () => {
     const superUser = await prisma.user.findUniqueOrThrow({ where: { username: 'super' } });
     expect((await api('ops').patch(`/admins/${opsUser.id}`, { permissions: [] })).status).toBe(403);
     expect((await api('super').patch(`/admins/${superUser.id}`, { permissions: [] })).status).toBe(400);
+    expect((await api('super').patch(`/admins/${superUser.id}`, { isActive: false })).status).toBe(400);
+    // ...but the Super Admin's login phone (needed for SMS OTP) can be set.
+    expect((await api('super').patch(`/admins/${superUser.id}`, { phone: '9000000001' })).status).toBe(200);
+    expect((await prisma.user.findUniqueOrThrow({ where: { id: superUser.id } })).phone).toBe('9000000001');
   });
 
   it('supervisor sees child stock but not child sales; small shops see only themselves', async () => {

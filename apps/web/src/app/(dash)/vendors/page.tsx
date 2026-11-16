@@ -123,7 +123,6 @@ function RecordPurchase({ vendors, onClose, onDone }: { vendors: Vendor[]; onClo
         </>
       }
     >
-      <span className="notice-plain" style={{ alignSelf: 'flex-start' }}>{t('common.notDesigned')}</span>
       <div className="form-grid">
         <Field label={t('vendor.vendor')}>
           <Select value={f.vendorId} onChange={set('vendorId')}>
@@ -173,7 +172,6 @@ function VendorForm({ vendor, onClose, onDone }: { vendor: Vendor | null; onClos
         </>
       }
     >
-      <span className="notice-plain" style={{ alignSelf: 'flex-start' }}>{t('common.notDesigned')}</span>
       <div className="form-grid">
         <Field label={t('vendor.nameEn')}><Input value={f.nameEn} onChange={set('nameEn')} /></Field>
         <Field label={t('vendor.nameTa')}><Input lang="ta" value={f.nameTa} onChange={set('nameTa')} /></Field>

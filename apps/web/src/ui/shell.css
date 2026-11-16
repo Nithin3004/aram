@@ -8,8 +8,10 @@
 .brand-en { font: 600 8px/1 var(--f-latin); letter-spacing: .42em; color: var(--c-gold); margin-right: -.42em; }
 .brand-name { font: 600 13px/1 var(--f-latin); letter-spacing: .02em; }
 html[lang='ta'] .brand-name { font-family: var(--f-tamil); }
-.topbar-meta { margin-left: auto; display: flex; align-items: center; gap: 14px; font: 400 11px/1 var(--f-mono); color: var(--c-text-faint); flex-wrap: wrap; }
-.topbar-live { display: flex; align-items: center; gap: 6px; }
+.topbar-meta { margin-left: auto; display: flex; align-items: center; gap: 14px; font: 400 12px/1 var(--f-latin); color: var(--c-on-ink-muted); flex-wrap: wrap; }
+html[lang='ta'] .topbar-meta { font-family: var(--f-tamil); }
+.topbar-live { display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; background: var(--c-online-pill); color: var(--c-online-pill-text); font-weight: 500; }
+.topbar-live.down { background: var(--c-danger); color: var(--c-on-ink); }
 .menu-btn { display: none; border: 0; background: var(--c-ink-soft); color: var(--c-on-ink); border-radius: var(--r-lg); padding: 8px 10px; font: 500 12px/1 var(--f-latin); font-family: inherit; cursor: pointer; }
 
 .body { flex: 1; display: grid; grid-template-columns: 236px minmax(0, 1fr); min-height: 0; }

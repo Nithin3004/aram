@@ -80,10 +80,11 @@ export default function DashLayout({ children }: { children: ReactNode }) {
           <span className="brand-name">{t('brand.name')}</span>
         </Link>
         <div className="topbar-meta">
-          {counts && <span className="hide-sm">{t('header.network', { shops: counts.shops, sup: counts.supervisors, small: counts.small })}</span>}
-          <span className="topbar-live hide-sm">
-            <span className="dot" style={{ background: 'var(--c-online)' }} />
-            {t('header.live')}
+          {counts && <span className="hide-sm">{t('header.network', { sup: counts.supervisors, small: counts.small })}</span>}
+          {/* Real status: the header data refreshes every minute; a failed refresh means the server can't be reached. */}
+          <span className={`topbar-live hide-sm ${nav.error ? 'down' : ''}`}>
+            <span className="dot" style={{ background: nav.error ? 'var(--c-on-ink)' : 'var(--c-online-bright)' }} />
+            {nav.error ? t('header.offline') : t('header.live')}
           </span>
           <LangSwitch value={language} onChange={setLanguage} />
         </div>

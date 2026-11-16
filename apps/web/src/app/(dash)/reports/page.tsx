@@ -102,7 +102,7 @@ export default function ReportsPage() {
 
   return (
     <div className="page">
-      <PageHeader title={t('report.title')} sub={t('report.sub')} plain actions={<Button onClick={exportCsv} disabled={!r}>{t('common.exportCsv')}</Button>} />
+      <PageHeader title={t('report.title')} sub={t('report.sub')} actions={<Button onClick={exportCsv} disabled={!r}>{t('common.exportCsv')}</Button>} />
       <Card pad>
         <div className="form-grid">
           <Field label={t('report.period')}>

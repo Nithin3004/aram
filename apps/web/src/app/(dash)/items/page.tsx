@@ -211,7 +211,6 @@ function AddItem({ onClose, onDone }: { onClose: () => void; onDone: () => void 
         </>
       }
     >
-      <span className="notice-plain" style={{ alignSelf: 'flex-start' }}>{t('common.notDesigned')}</span>
       <div className="form-grid">
         <Field label={t('items.code')}><Input value={f.code} placeholder="ITM-31" onChange={(e) => setF({ ...f, code: e.target.value })} /></Field>
         <Field label={t('items.unit')}>

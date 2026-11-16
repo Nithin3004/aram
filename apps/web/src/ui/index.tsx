@@ -14,14 +14,12 @@ export function Button({ variant = 'default', block, className, ...p }: ButtonHT
   return <button type="button" {...p} className={cx('btn', variant !== 'default' && `btn-${variant}`, block && 'btn-block', className)} />;
 }
 
-export function PageHeader({ title, sub, actions, plain }: { title: string; sub?: ReactNode; actions?: ReactNode; plain?: boolean }) {
-  const { t } = useTranslation();
+export function PageHeader({ title, sub, actions }: { title: string; sub?: ReactNode; actions?: ReactNode }) {
   return (
     <div className="page-head">
       <div>
         <h1>{title}</h1>
         {sub && <div className="page-sub">{sub}</div>}
-        {plain && <div style={{ marginTop: 8 }}><span className="notice-plain">{t('common.notDesigned')}</span></div>}
       </div>
       {actions && <div className="page-actions">{actions}</div>}
     </div>
@@ -139,7 +137,7 @@ export function Bar({ pct, tone }: { pct: number; tone?: 'danger' | 'warn' }) {
 
 export function Toggle({ on, fixed, onChange, label }: { on: boolean; fixed?: boolean; onChange?: (v: boolean) => void; label: string }) {
   return (
-    <button type="button" aria-label={label} aria-pressed={on} className={cx('toggle', fixed ? 'fixed' : on && 'on')} onClick={() => !fixed && onChange?.(!on)} disabled={fixed}>
+    <button type="button" aria-label={label} aria-pressed={on} className={cx('toggle', on && 'on', fixed && 'fixed')} onClick={() => !fixed && onChange?.(!on)} disabled={fixed}>
       <span />
     </button>
   );

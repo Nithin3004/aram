@@ -341,7 +341,6 @@ function AddShop({ supervisors, onClose, onDone }: { supervisors: ShopRow[]; onC
         </>
       }
     >
-      <span className="notice-plain">{t('common.notDesigned')}</span>
       <div className="form-grid">
         <Field label={t('shops.code')}><Input value={f.code} onChange={set('code')} placeholder="S-370" /></Field>
         <Field label={t('shops.type')}>

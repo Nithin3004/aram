@@ -11,7 +11,8 @@ import { AdminPhoneDialog } from '../../../components/ShopDialogs';
 
 interface Admin { id: string; name: string; username: string; role: 'SUPER_ADMIN' | 'ADMIN'; isActive: boolean; permissions: Permission[]; phoneMasked: string }
 
-const COLS = `minmax(200px,1.3fr) repeat(${ALL_PERMISSIONS.length}, minmax(84px,1fr)) 90px`;
+const COLS = `minmax(210px,1.5fr) repeat(${ALL_PERMISSIONS.length}, minmax(78px,1fr)) minmax(150px,auto)`;
+const MIN_W = 980;
 const AVATAR_TONES = ['var(--c-accent)', 'var(--c-resolved)', 'var(--c-info)', 'var(--c-warn)', 'var(--c-success)'];
 
 export default function AdminsPage() {
@@ -38,7 +39,7 @@ export default function AdminsPage() {
       <FormError>{act.error}</FormError>
       <Card>
         <div className="scroll-x">
-          <THead cols={COLS} minWidth={900}>
+          <THead cols={COLS} minWidth={MIN_W}>
             <span>{t('admin.admin')}</span>
             {ALL_PERMISSIONS.map((p) => <span key={p} className="center">{t(`perm.${p}`)}</span>)}
             <span />
@@ -47,7 +48,7 @@ export default function AdminsPage() {
           {list.data?.map((a, i) => {
             const fixed = a.role === 'SUPER_ADMIN';
             return (
-              <TRow key={a.id} cols={COLS} minWidth={900} tone={a.isActive ? undefined : 'muted'}>
+              <TRow key={a.id} cols={COLS} minWidth={MIN_W} tone={a.isActive ? undefined : 'muted'}>
                 <span className="row" style={{ flexWrap: 'nowrap', gap: 10, minWidth: 0 }}>
                   <Avatar name={a.name} color={AVATAR_TONES[i % AVATAR_TONES.length]} />
                   <span style={{ minWidth: 0 }}>
@@ -58,22 +59,29 @@ export default function AdminsPage() {
                     </span>
                   </span>
                 </span>
-                {ALL_PERMISSIONS.map((p) => (
-                  <span key={p} className="row" style={{ justifyContent: 'center' }}>
-                    <Toggle
-                      label={t(`perm.${p}`)}
-                      fixed={fixed || !isSuper}
-                      on={fixed || a.permissions.includes(p)}
-                      onChange={(on) => update(a, { permissions: on ? [...a.permissions, p] : a.permissions.filter((x) => x !== p) })}
-                    />
+                {fixed ? (
+                  // Super Admin always has everything: one clear label instead of a row of locked switches.
+                  <span className="row" style={{ gridColumn: `span ${ALL_PERMISSIONS.length}`, justifyContent: 'center' }}>
+                    <Tag tone="accent">{t('admin.fullAccess')}</Tag>
                   </span>
-                ))}
+                ) : (
+                  ALL_PERMISSIONS.map((p) => (
+                    <span key={p} className="row" style={{ justifyContent: 'center' }}>
+                      <Toggle
+                        label={t(`perm.${p}`)}
+                        fixed={!isSuper}
+                        on={a.permissions.includes(p)}
+                        onChange={(on) => update(a, { permissions: on ? [...a.permissions, p] : a.permissions.filter((x) => x !== p) })}
+                      />
+                    </span>
+                  ))
+                )}
                 <span className="right">
                   {!a.isActive && <Tag tone="danger">{t('admin.disabled')}</Tag>}
-                  {!fixed && isSuper && (
+                  {isSuper && (
                     <span className="stack-sm" style={{ alignItems: 'flex-end', gap: 6 }}>
-                      <Button variant="link" onClick={() => update(a, { isActive: !a.isActive })}>{a.isActive ? t('admin.disable') : t('admin.enable')}</Button>
-                      <Button variant="link" onClick={() => setResetting(a)}>{t('auth.resetPassword')}</Button>
+                      {!fixed && <Button variant="link" onClick={() => update(a, { isActive: !a.isActive })}>{a.isActive ? t('admin.disable') : t('admin.enable')}</Button>}
+                      {!fixed && <Button variant="link" onClick={() => setResetting(a)}>{t('auth.resetPassword')}</Button>}
                       <Button variant="link" onClick={() => setPhoneFor(a)}>{t('admin.editPhone')} · {a.phoneMasked}</Button>
                     </span>
                   )}
@@ -143,7 +151,6 @@ function CreateAdmin({ onClose, onDone }: { onClose: () => void; onDone: () => v
         </>
       }
     >
-      <span className="notice-plain" style={{ alignSelf: 'flex-start' }}>{t('common.notDesigned')}</span>
       <div className="form-grid">
         <Field label={t('admin.name')}><Input value={f.name} onChange={set('name')} /></Field>
         <Field label={t('admin.username')}><Input value={f.username} onChange={set('username')} /></Field>

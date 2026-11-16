@@ -41,7 +41,6 @@ input, button, textarea, select { font-family: inherit; color: inherit; }
 .page-head h1 { margin: 0; font: 600 22px/1.2 var(--f-latin); font-family: inherit; }
 .page-sub { margin-top: 6px; font: 400 11px/1.4 var(--f-mono); color: var(--c-text-subtle); }
 .page-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.notice-plain { font: 400 10px/1.4 var(--f-mono); color: var(--c-text-faint); border: 1px dashed var(--c-border); border-radius: var(--r-sm); padding: 4px 8px; }
 
 /* ---- card ---- */
 .card { background: var(--c-card); border: 1px solid var(--c-card-border); border-radius: var(--r-xl); overflow: hidden; min-width: 0; }
@@ -133,7 +132,7 @@ button.trow:hover { background: var(--c-row-alt); }
 .bar.warn > span { background: var(--c-warn); }
 .toggle { width: 38px; height: 22px; border-radius: 12px; border: 0; padding: 2px; cursor: pointer; background: var(--c-border); display: flex; justify-content: flex-start; }
 .toggle.on { background: var(--c-accent); justify-content: flex-end; }
-.toggle.fixed { background: var(--c-text-faint); justify-content: flex-end; cursor: not-allowed; }
+.toggle.fixed { cursor: not-allowed; opacity: .55; }
 .toggle > span { width: 18px; height: 18px; border-radius: 50%; background: var(--c-card); display: block; }
 
 /* ---- modal ---- */

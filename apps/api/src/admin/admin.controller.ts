@@ -74,7 +74,10 @@ export class AdminController {
   async updateAdmin(@CurrentUser() user: AuthUser, @Param('id') id: string, @Body(new ZodPipe(updateAdminSchema)) body: z.infer<typeof updateAdminSchema>) {
     const target = await this.prisma.user.findUnique({ where: { id } });
     if (!target || target.role === 'SHOP') throw notFound('Admin');
-    if (target.role === 'SUPER_ADMIN') throw badRequest('admin.fixed', 'Super Admin permissions are fixed');
+    // Super Admin's permissions and active state are fixed; only the login phone (for OTP) may change.
+    if (target.role === 'SUPER_ADMIN' && (body.permissions !== undefined || body.isActive !== undefined)) {
+      throw badRequest('admin.fixed', 'Super Admin permissions are fixed');
+    }
     return this.prisma.$transaction(async (tx) => {
       const after = await tx.user.update({ where: { id }, data: body });
       const added = (body.permissions ?? []).filter((p) => !target.permissions.includes(p));
@@ -83,6 +86,7 @@ export class AdminController {
         ...added.map((p) => `turned on "${p}"`),
         ...removed.map((p) => `turned off "${p}"`),
         ...(body.isActive === false ? ['disabled account'] : body.isActive === true && !target.isActive ? ['enabled account'] : []),
+        ...(body.phone !== undefined && body.phone !== target.phone ? ['changed login phone'] : []),
       ];
       await this.audit.log(
         {

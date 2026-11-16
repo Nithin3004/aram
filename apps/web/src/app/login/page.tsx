@@ -126,7 +126,6 @@ export default function LoginPage() {
             </form>
           )}
         </Card>
-        <div className="xsmall t-faint mono center">{t('common.notDesigned')}</div>
       </div>
     </div>
   );

@@ -41,7 +41,7 @@ export default function SettingsPage() {
 
   return (
     <div className="page">
-      <PageHeader title={t('settings.title')} plain />
+      <PageHeader title={t('settings.title')} />
       <Card pad style={{ maxWidth: 640 }}>
         <div className="stack">
           <Field label={t('settings.tolerance')} hint={t('settings.toleranceHint')}>
