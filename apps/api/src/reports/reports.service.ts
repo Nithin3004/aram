@@ -184,6 +184,9 @@ export class ReportsService {
       inQty: number;
       salesQty: number;
       closingQty: number;
+      /** Opening stock entered in this period (already inside openingValuePaise / openingQty). */
+      openAddValue: number;
+      openAddQty: number;
     };
     const rows: Row[] = [];
     const periodLabel = (k: string) => {
@@ -198,8 +201,14 @@ export class ReportsService {
       const ym = monthKey(d);
       if (!cur || cur.key !== k) {
         if (cur) rows.push(cur);
-        for (const [itemId, g] of openAdd.get(k) ?? []) qty.set(itemId, (qty.get(itemId) ?? 0) + g);
-        cur = { key: k, label: periodLabel(k), openingValuePaise: valueOf(ym), inPaise: 0, salesPaise: 0, cogsPaise: 0, closingValuePaise: 0, openingQty: totalQty(), inQty: 0, salesQty: 0, closingQty: 0 };
+        let addValue = 0;
+        let addQty = 0;
+        for (const [itemId, g] of openAdd.get(k) ?? []) {
+          qty.set(itemId, (qty.get(itemId) ?? 0) + g);
+          addValue += lineValuePaise(g, costRate(itemId, ym));
+          addQty += g;
+        }
+        cur = { key: k, label: periodLabel(k), openingValuePaise: valueOf(ym), inPaise: 0, salesPaise: 0, cogsPaise: 0, closingValuePaise: 0, openingQty: totalQty(), inQty: 0, salesQty: 0, closingQty: 0, openAddValue: addValue, openAddQty: addQty };
       }
       for (const [, g] of dayIn.get(d) ?? []) cur.inQty += g;
       for (const [itemId, g] of dayReceived.get(d) ?? []) cur.inPaise += lineValuePaise(g, costRate(itemId, ym));
@@ -231,6 +240,10 @@ export class ReportsService {
       };
     });
     const sum = (f: (r: (typeof shaped)[number]) => number) => shaped.reduce((a, r) => a + f(r), 0);
+    // Whole-range opening = stock at the start + opening stock entered in any later period, so that
+    // opening + purchases − cost of goods ≈ closing also holds for the total line.
+    const laterOpenValue = rows.slice(1).reduce((a, r) => a + r.openAddValue, 0);
+    const laterOpenQty = rows.slice(1).reduce((a, r) => a + r.openAddQty, 0);
     const salesT = sum((r) => r.salesPaise);
     const cogsT = sum((r) => r.cogsPaise);
     return {
@@ -242,7 +255,7 @@ export class ReportsService {
       unit: q.itemId ? items[0]?.unit ?? 'kg' : null,
       rows: shaped,
       total: {
-        openingValuePaise: shaped[0]?.openingValuePaise ?? 0,
+        openingValuePaise: (shaped[0]?.openingValuePaise ?? 0) + laterOpenValue,
         inPaise: sum((r) => r.inPaise),
         salesPaise: salesT,
         cogsPaise: cogsT,
@@ -251,7 +264,7 @@ export class ReportsService {
         closingValuePaise: shaped[shaped.length - 1]?.closingValuePaise ?? 0,
         ...(q.itemId
           ? {
-              openingQty: shaped[0]?.openingQty ?? 0,
+              openingQty: (shaped[0]?.openingQty ?? 0) + laterOpenQty,
               inQty: sum((r) => r.inQty ?? 0),
               salesQty: sum((r) => r.salesQty ?? 0),
               closingQty: shaped[shaped.length - 1]?.closingQty ?? 0,
